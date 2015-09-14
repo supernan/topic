@@ -1,0 +1,235 @@
+Log file created at: 2015/09/11 15:59:48
+Running on machine: wdse51
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0911 15:59:48.753835 18682 plsa.cpp:46] load configuration succeed
+I0911 15:59:48.754576 18682 plsa.cpp:531] train PLSA
+I0911 15:59:48.754595 18682 plsa.cpp:200] text preprocess
+I0911 15:59:48.756906 18682 plsa.cpp:53] load stop words
+I0911 15:59:48.758249 18682 plsa.cpp:65] load stop words succeed
+I0911 15:59:48.758260 18682 plsa.cpp:73] words segement
+I0911 15:59:49.095609 18682 plsa.cpp:101] words segement succeed
+I0911 15:59:49.095640 18682 plsa.cpp:109] dict generate
+I0911 15:59:49.097898 18682 plsa.cpp:143] dict generate succeed
+I0911 15:59:49.097905 18682 plsa.cpp:152] text preprocess
+I0911 15:59:49.136302 18682 plsa.cpp:193] text preprocess succeed
+I0911 15:59:49.136323 18682 plsa.cpp:236] text preprocess succeed
+I0911 15:59:49.136970 18682 plsa.cpp:538] preprocess succeeddoc:604 terms: 1302
+I0911 15:59:49.136978 18682 plsa.cpp:285] init plsa model
+I0911 15:59:50.195991 18682 plsa.cpp:340] init latent variable z
+I0911 15:59:50.196036 18682 plsa.cpp:342] 604 10 1302
+I0911 15:59:58.954010 18682 plsa.cpp:378] init z finish 275.38s
+I0911 15:59:58.954098 18682 plsa.cpp:422] calc pi
+I0911 15:59:58.962277 18682 plsa.cpp:451] calc pi finish 0.26s
+I0911 15:59:58.962323 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.020256 18682 plsa.cpp:486] calc term finish 1.86s
+I0911 15:59:59.020323 18682 plsa.cpp:544] 0th iteration
+I0911 15:59:59.020342 18682 plsa.cpp:385] calc z
+I0911 15:59:59.028798 18682 plsa.cpp:415] calc z finish 0.28s
+I0911 15:59:59.028849 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.035444 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.035483 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.091315 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 15:59:59.091359 18682 plsa.cpp:544] 1th iteration
+I0911 15:59:59.091390 18682 plsa.cpp:385] calc z
+I0911 15:59:59.099828 18682 plsa.cpp:415] calc z finish 0.28s
+I0911 15:59:59.099874 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.106462 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.106504 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.162695 18682 plsa.cpp:486] calc term finish 1.81s
+I0911 15:59:59.162737 18682 plsa.cpp:544] 2th iteration
+I0911 15:59:59.162766 18682 plsa.cpp:385] calc z
+I0911 15:59:59.171180 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.171222 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.177836 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.177877 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.233577 18682 plsa.cpp:486] calc term finish 1.78s
+I0911 15:59:59.233630 18682 plsa.cpp:544] 3th iteration
+I0911 15:59:59.233661 18682 plsa.cpp:385] calc z
+I0911 15:59:59.242106 18682 plsa.cpp:415] calc z finish 0.28s
+I0911 15:59:59.242151 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.248785 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.248826 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.304749 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 15:59:59.304792 18682 plsa.cpp:544] 4th iteration
+I0911 15:59:59.304822 18682 plsa.cpp:385] calc z
+I0911 15:59:59.313230 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.313279 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.319869 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.319911 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.375655 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 15:59:59.375699 18682 plsa.cpp:544] 5th iteration
+I0911 15:59:59.375730 18682 plsa.cpp:385] calc z
+I0911 15:59:59.384120 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.384163 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.390789 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.390830 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.446821 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 15:59:59.446862 18682 plsa.cpp:544] 6th iteration
+I0911 15:59:59.446889 18682 plsa.cpp:385] calc z
+I0911 15:59:59.455292 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 15:59:59.455333 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.461877 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.461920 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.517678 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 15:59:59.517722 18682 plsa.cpp:544] 7th iteration
+I0911 15:59:59.517753 18682 plsa.cpp:385] calc z
+I0911 15:59:59.526228 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.526274 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.532826 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.532866 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.588927 18682 plsa.cpp:486] calc term finish 1.81s
+I0911 15:59:59.588979 18682 plsa.cpp:544] 8th iteration
+I0911 15:59:59.589009 18682 plsa.cpp:385] calc z
+I0911 15:59:59.597403 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 15:59:59.597445 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.603979 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 15:59:59.604018 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.659590 18682 plsa.cpp:486] calc term finish 1.77s
+I0911 15:59:59.659639 18682 plsa.cpp:544] 9th iteration
+I0911 15:59:59.659670 18682 plsa.cpp:385] calc z
+I0911 15:59:59.668112 18682 plsa.cpp:415] calc z finish 0.28s
+I0911 15:59:59.668154 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.674695 18682 plsa.cpp:451] calc pi finish 0.2s
+I0911 15:59:59.674734 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.730687 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 15:59:59.730731 18682 plsa.cpp:544] 10th iteration
+I0911 15:59:59.730761 18682 plsa.cpp:385] calc z
+I0911 15:59:59.739226 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.739270 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.745846 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 15:59:59.745888 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.801676 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 15:59:59.801722 18682 plsa.cpp:544] 11th iteration
+I0911 15:59:59.801753 18682 plsa.cpp:385] calc z
+I0911 15:59:59.810194 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 15:59:59.810238 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.816838 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 15:59:59.816879 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.872907 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 15:59:59.872947 18682 plsa.cpp:544] 12th iteration
+I0911 15:59:59.872978 18682 plsa.cpp:385] calc z
+I0911 15:59:59.881363 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 15:59:59.881404 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.888011 18682 plsa.cpp:451] calc pi finish 0.23s
+I0911 15:59:59.888053 18682 plsa.cpp:457] calc term prob
+I0911 15:59:59.943883 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 15:59:59.943928 18682 plsa.cpp:544] 13th iteration
+I0911 15:59:59.943960 18682 plsa.cpp:385] calc z
+I0911 15:59:59.952371 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 15:59:59.952416 18682 plsa.cpp:422] calc pi
+I0911 15:59:59.959039 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 15:59:59.959080 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.014940 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.014986 18682 plsa.cpp:544] 14th iteration
+I0911 16:00:00.015033 18682 plsa.cpp:385] calc z
+I0911 16:00:00.023421 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 16:00:00.023466 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.030071 18682 plsa.cpp:451] calc pi finish 0.23s
+I0911 16:00:00.030112 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.086161 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 16:00:00.086205 18682 plsa.cpp:544] 15th iteration
+I0911 16:00:00.086236 18682 plsa.cpp:385] calc z
+I0911 16:00:00.094619 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 16:00:00.094661 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.101268 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:00.101308 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.157207 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.157249 18682 plsa.cpp:544] 16th iteration
+I0911 16:00:00.157279 18682 plsa.cpp:385] calc z
+I0911 16:00:00.165671 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 16:00:00.165715 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.172246 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 16:00:00.172286 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.227902 18682 plsa.cpp:486] calc term finish 1.79s
+I0911 16:00:00.227946 18682 plsa.cpp:544] 17th iteration
+I0911 16:00:00.227975 18682 plsa.cpp:385] calc z
+I0911 16:00:00.236367 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 16:00:00.236455 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.242995 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:00.243036 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.299093 18682 plsa.cpp:486] calc term finish 1.81s
+I0911 16:00:00.299137 18682 plsa.cpp:544] 18th iteration
+I0911 16:00:00.299168 18682 plsa.cpp:385] calc z
+I0911 16:00:00.307584 18682 plsa.cpp:415] calc z finish 0.26s
+I0911 16:00:00.307636 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.314172 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:00.314211 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.370239 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.370282 18682 plsa.cpp:544] 19th iteration
+I0911 16:00:00.370313 18682 plsa.cpp:385] calc z
+I0911 16:00:00.378729 18682 plsa.cpp:415] calc z finish 0.27s
+I0911 16:00:00.378773 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.385329 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 16:00:00.385370 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.441454 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.441496 18682 plsa.cpp:544] 20th iteration
+I0911 16:00:00.441525 18682 plsa.cpp:385] calc z
+I0911 16:00:00.450166 18682 plsa.cpp:415] calc z finish 0.29s
+I0911 16:00:00.450207 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.456768 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 16:00:00.456809 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.512732 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.512773 18682 plsa.cpp:544] 21th iteration
+I0911 16:00:00.512805 18682 plsa.cpp:385] calc z
+I0911 16:00:00.521860 18682 plsa.cpp:415] calc z finish 0.3s
+I0911 16:00:00.521903 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.528477 18682 plsa.cpp:451] calc pi finish 0.2s
+I0911 16:00:00.528519 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.584460 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.584501 18682 plsa.cpp:544] 22th iteration
+I0911 16:00:00.584532 18682 plsa.cpp:385] calc z
+I0911 16:00:00.593930 18682 plsa.cpp:415] calc z finish 0.32s
+I0911 16:00:00.593972 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.600522 18682 plsa.cpp:451] calc pi finish 0.2s
+I0911 16:00:00.600564 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.656503 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.656546 18682 plsa.cpp:544] 23th iteration
+I0911 16:00:00.656576 18682 plsa.cpp:385] calc z
+I0911 16:00:00.666460 18682 plsa.cpp:415] calc z finish 0.32s
+I0911 16:00:00.666502 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.673022 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:00.673063 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.729370 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.729410 18682 plsa.cpp:544] 24th iteration
+I0911 16:00:00.729439 18682 plsa.cpp:385] calc z
+I0911 16:00:00.739855 18682 plsa.cpp:415] calc z finish 0.35s
+I0911 16:00:00.739897 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.746466 18682 plsa.cpp:451] calc pi finish 0.2s
+I0911 16:00:00.746507 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.802947 18682 plsa.cpp:486] calc term finish 1.83s
+I0911 16:00:00.802989 18682 plsa.cpp:544] 25th iteration
+I0911 16:00:00.803022 18682 plsa.cpp:385] calc z
+I0911 16:00:00.814172 18682 plsa.cpp:415] calc z finish 0.36s
+I0911 16:00:00.814215 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.820788 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 16:00:00.820828 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.877167 18682 plsa.cpp:486] calc term finish 1.81s
+I0911 16:00:00.877208 18682 plsa.cpp:544] 26th iteration
+I0911 16:00:00.877235 18682 plsa.cpp:385] calc z
+I0911 16:00:00.889534 18682 plsa.cpp:415] calc z finish 0.39s
+I0911 16:00:00.889576 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.896131 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:00.896172 18682 plsa.cpp:457] calc term prob
+I0911 16:00:00.952460 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:00.952503 18682 plsa.cpp:544] 27th iteration
+I0911 16:00:00.952534 18682 plsa.cpp:385] calc z
+I0911 16:00:00.965495 18682 plsa.cpp:415] calc z finish 0.42s
+I0911 16:00:00.965539 18682 plsa.cpp:422] calc pi
+I0911 16:00:00.972126 18682 plsa.cpp:451] calc pi finish 0.21s
+I0911 16:00:00.972168 18682 plsa.cpp:457] calc term prob
+I0911 16:00:01.029120 18682 plsa.cpp:486] calc term finish 1.84s
+I0911 16:00:01.029162 18682 plsa.cpp:544] 28th iteration
+I0911 16:00:01.029196 18682 plsa.cpp:385] calc z
+I0911 16:00:01.042326 18682 plsa.cpp:415] calc z finish 0.41s
+I0911 16:00:01.042368 18682 plsa.cpp:422] calc pi
+I0911 16:00:01.048949 18682 plsa.cpp:451] calc pi finish 0.22s
+I0911 16:00:01.048990 18682 plsa.cpp:457] calc term prob
+I0911 16:00:01.105396 18682 plsa.cpp:486] calc term finish 1.8s
+I0911 16:00:01.105439 18682 plsa.cpp:544] 29th iteration
+I0911 16:00:01.105480 18682 plsa.cpp:385] calc z
+I0911 16:00:01.120082 18682 plsa.cpp:415] calc z finish 0.48s
+I0911 16:00:01.120123 18682 plsa.cpp:422] calc pi
+I0911 16:00:01.126631 18682 plsa.cpp:451] calc pi finish 0.2s
+I0911 16:00:01.126672 18682 plsa.cpp:457] calc term prob
+I0911 16:00:01.183606 18682 plsa.cpp:486] calc term finish 1.83s
+I0911 16:00:01.183657 18682 plsa.cpp:601] save probs

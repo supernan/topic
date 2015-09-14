@@ -1,0 +1,7 @@
+<Plsa>
+	<topics>10</topics>
+	<iteration>50</iteration>
+	<lambda>0.5</lambda>
+	<dict>../data/words_tf</dict>
+	<doc_tf>../data/doc_word2</doc_tf>
+</Plsa>  

@@ -1,0 +1,1 @@
+/usr/bin/c++    -g  -fopenmp -Wall -O2  -lpthread -lrt -ltinyxml -lglog -lNLPIR CMakeFiles/test.dir/test.o CMakeFiles/test.dir/util.o CMakeFiles/test.dir/plsa.o  -o test  -L/home/zhounan/project/cpp/topic/lib -rdynamic -ltinyxml -lNLPIR -Wl,-Bstatic -lglog -Wl,-Bdynamic -lpthread -Wl,-rpath,/home/zhounan/project/cpp/topic/lib 

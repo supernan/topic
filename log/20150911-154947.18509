@@ -1,0 +1,8 @@
+Log file created at: 2015/09/11 15:49:47
+Running on machine: wdse51
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0911 15:49:47.141403 18509 plsa.cpp:46] load configuration succeed
+I0911 15:49:47.142104 18509 plsa.cpp:638] load probs
+I0911 15:49:47.167860 18509 plsa.cpp:686] load probs succeed
+I0911 15:49:47.167902 18509 plsa.cpp:558] get topic words
+I0911 15:49:47.172260 18509 plsa.cpp:594] get topic words succeed
