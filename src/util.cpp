@@ -155,7 +155,32 @@ void tools::Util::read_doc_tf(std::string &path, double **counts,
 }
 
 
-void tools::AC_automation::_insert(Trie *root, std::string &pattern)
+tools::AC_automation::AC_automation()
+{
+	_root = new Trie();
+}
+
+
+void tools::AC_automation::_destroy_tree(Trie *root)
+{
+	if (root == NULL) //空指针 判断
+		return;
+	std::map<char, Trie*>::iterator iter;
+	for (iter = root->next.begin(); iter != root->next.end(); ++iter)
+	{
+		_destroy_tree(iter->second);
+	}
+	delete root;
+}
+
+
+tools::AC_automation::~AC_automation()
+{
+	_destroy_tree(_root);
+}
+
+
+void tools::AC_automation::_insert(Trie *root, std::string &pattern, int id)
 {
 	Trie *cur = root;
 	for (int i = 0; i < pattern.length(); i++)
@@ -165,6 +190,7 @@ void tools::AC_automation::_insert(Trie *root, std::string &pattern)
 		cur = cur->next[pattern[i]];
 	}
 	++cur->count;
+	cur->pattern_id = id;
 }
 
 
@@ -206,18 +232,20 @@ void tools::AC_automation::_build(Trie *root)
 
 void tools::AC_automation::build_automation(std::vector<std::string> &patterns)
 {
-	_root = new Trie();
 	for (int i = 0; i < patterns.size(); i++)
 	{
-		_insert(_root, patterns[i]);
+		_visit[i] = 0;
+		_insert(_root, patterns[i], i);
+		_id_pattern_map[i] = patterns[i];
 	}
 	_build(_root);
 }
 
 
-int tools::AC_automation::query(std::string &text)
+std::map<int, std::string> tools::AC_automation::query(std::string &text)
 {
 	int ret = 0;
+	std::map<int, std::string> match_patterns;
 	Trie *cur = _root;
 	for (int i = 0; i < text.length(); i++)
 	{
@@ -229,9 +257,44 @@ int tools::AC_automation::query(std::string &text)
 		Trie *tmp = cur;
 		while (tmp != _root && tmp)
 		{
-			ret += tmp->count;
+			if (tmp->pattern_id != -1 &&_visit[tmp->pattern_id] == 0)
+			{
+				ret += tmp->count;
+				_visit[tmp->pattern_id] = 1;
+				match_patterns[tmp->pattern_id] = _id_pattern_map[tmp->pattern_id];
+			}
 			tmp = tmp->fail;
 		}
 	}
-	return ret;
+	return match_patterns;
+}
+
+
+void tools::AC_automation::clear()
+{
+	_destroy_tree(_root);
+	_root = new Trie();
+	_id_pattern_map.clear();
+	_visit.clear();
+}
+
+
+int tools::RelationTree::find_parent(int pos, std::vector<int> &parents)
+{
+	if (pos != parents[pos])
+		parents[pos] = find_parent(parents[pos], parents);
+	return parents[pos];
+}
+
+
+void tools::RelationTree::union_node(int x, int y, std::vector<int> &parents)
+{
+	int x_parent = find_parent(x, parents);
+	int y_parent = find_parent(y, parents);
+	if (x_parent == y_parent)
+		return;
+	if (x > y)
+		parents[y] = x;
+	else
+		parents[x] = y;
 }

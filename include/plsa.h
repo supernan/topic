@@ -32,6 +32,8 @@ namespace nlp
 			~Plsa();
 			void train_plsa();
 			bool get_topic_words(std::map<int, std::vector<std::string> > &topic_words);
+			std::map<int, WeiboTopic_ICT::Weibo> get_documents() const; //文档id与文档对象映射关系
+
 			void save_probs(std::string &path);
 			bool load_probs(std::string &path);
 		

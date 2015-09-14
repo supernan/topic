@@ -597,6 +597,12 @@ bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_
 }
 
 
+std::map<int, WeiboTopic_ICT::Weibo> nlp::Plsa::get_documents() const
+{
+	return _id_doc_map;
+}
+
+
 void nlp::Plsa::save_probs(std::string &path)
 {
 	LOG(INFO) << "save probs" << std::endl;

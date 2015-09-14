@@ -26,12 +26,14 @@ namespace tools
 	{
 		public:
 			int count;
+			int pattern_id;
 			std::map<char, Trie*> next;
 			Trie *fail;
 			Trie()
 			{
 				next.clear();
 				count = 0;
+				pattern_id = -1;
 				fail = NULL;
 			}
 	};
@@ -39,12 +41,25 @@ namespace tools
 	class AC_automation
 	{
 		public:
-			int query(std::string &text);
+			AC_automation();
+			~AC_automation();
+			std::map<int, std::string> query(std::string &text);
 			void build_automation(std::vector<std::string> &patterns);
+			void clear();
 		private:
 			void _build(Trie *root);
-			void _insert(Trie *root, std::string &pattern);
+			void _insert(Trie *root, std::string &pattern, int id);
+			void _destroy_tree(Trie *root);
 			Trie *_root;
+			std::map<int, int> _visit;
+			std::map<int, std::string> _id_pattern_map;
+	};
+
+	class RelationTree
+	{
+		public:
+			int find_parent(int pos, std::vector<int> &parents);
+			void union_node(int x, int y, std::vector<int> &parents);
 	};
 
 	class Util
@@ -58,6 +73,8 @@ namespace tools
 			void read_doc_tf(std::string &doc_path, double **counts,
 					         std::map<int, double> &doc_words_map, std::map<int, double> &dict_tf);
 	};
+
+
 }
 
 #endif
