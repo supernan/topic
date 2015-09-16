@@ -34,18 +34,25 @@ void ict::Topic::_get_plsa_topics()
 void ict::Topic::_words_occurrence(std::vector<std::string> &key_words, std::string &text,
 		                           std::vector<std::vector<int> > &matrix)
 {
-	std::map<int, std::string> match_patterns = _mation_ptr->query(text);
-	std::map<int, std::string>::iterator iter;
-	std::vector<int> match_ids;
-	for (iter = match_patterns.begin(); iter != match_patterns.end(); ++iter)
-		match_ids.push_back(iter->first);
-	for (int i= 0; i < match_ids.size(); i++)
+	std::vector<std::string> sents;
+	std::string end_sep = "。";
+	_util_ptr->split_line(text, end_sep, sents); //断句计算词语共现
+	for (int i = 0; i < sents.size(); i++)
 	{
-		for (int j = 0; j < match_ids.size(); j++)
+		std::map<int, std::string> match_patterns = _mation_ptr->query(sents[i]);
+		std::map<int, std::string>::iterator iter;
+		std::vector<int> match_ids;
+		for (iter = match_patterns.begin(); iter != match_patterns.end(); ++iter)
+			match_ids.push_back(iter->first);
+		for (int i= 0; i < match_ids.size(); i++)
 		{
-			if (i != j)
-				matrix[i][j] += 1;
+			for (int j = 0; j < match_ids.size(); j++)
+			{
+				if (i != j)
+					matrix[i][j] += 1;
+			}
 		}
+
 	}
 }
 
@@ -102,6 +109,7 @@ bool ict::Topic::generate_topics(int thresh, int min_count)
 		LOG(ERROR) << "there is no any doc" <<std::endl;
 		return false;
 	}
+	int topic_count = 0;
 	for (iter = plsa_topic_words.begin(); iter != plsa_topic_words.end(); ++iter)
 	{
 		std::vector<std::string> key_words = iter->second;
@@ -118,17 +126,16 @@ bool ict::Topic::generate_topics(int thresh, int min_count)
 		std::map<int, vector<std::string> > words_cluster;
 		_words_relations(matrix, thresh, key_words, words_cluster);
 		
-		int topic_count = 0;
 		std::map<int, vector<std::string> >::iterator word_iter;
 		for (word_iter = words_cluster.begin(); word_iter != words_cluster.end(); ++word_iter)
 		{
-			if (word_iter->second.size() > min_count)
+			if (word_iter->second.size() >= min_count)
 			{
 				_topic_words[topic_count] = word_iter->second;
 				for (int i = 0; i < _topic_words[topic_count].size(); i++)
 					std::cout<<_topic_words[topic_count][i]<<" ";
 				std::cout<<std::endl;
-				topic_count += 1;
+				topic_count++;
 			}
 		}
 
@@ -138,6 +145,44 @@ bool ict::Topic::generate_topics(int thresh, int min_count)
 }
 
 
+bool ict::Topic::generate_docs(double match_rate)
+{
+	LOG(INFO) << "try to generate docs of each topics" << std::endl;
+	if (_topic_words.empty())
+	{
+		LOG(ERROR) << "topic words can not be empty！" << std::endl;
+		return false;
+	}
+	std::map<int, std::vector<std::string> >::iterator topic_iter;
+	std::map<int, std::vector<WeiboTopic_ICT::Weibo> >::iterator weibo_iter;
+	std::map<int, WeiboTopic_ICT::Weibo>::iterator doc_iter;
+	std::map<int, WeiboTopic_ICT::Weibo> docs = _plsa_ptr->get_documents();
+	std::cout<<"topic size: "<<_topic_words.size()<<std::endl;
+	for (topic_iter = _topic_words.begin(); topic_iter != _topic_words.end(); ++topic_iter)
+	{
+		std::vector<std::string> key_words = topic_iter->second;
+		_mation_ptr->build_automation(key_words);
+		int key_size = key_words.size();
+		std::vector<WeiboTopic_ICT::Weibo> texts;
+		_topic_docs[topic_iter->first] = texts;
+		for (doc_iter = docs.begin(); doc_iter != docs.end(); ++doc_iter)
+		{
+			std::map<int, std::string> match_patterns = _mation_ptr->query(doc_iter->second.mt);
+			int match_size = match_patterns.size();
+			if (match_size >= key_size * match_rate)
+			{
+				_topic_docs[topic_iter->first].push_back(doc_iter->second);
+			}
+		}
+		_mation_ptr->clear();
+	}
+	for (weibo_iter = _topic_docs.begin(); weibo_iter != _topic_docs.end(); ++weibo_iter)
+	{
+		std::cout <<weibo_iter->first<<" "<<"size: "<<weibo_iter->second.size()<<std::endl;
+	}
+	LOG(INFO) << "generate docs of each topics succeed" << std::endl;
+	return true;
+}
 
 
 

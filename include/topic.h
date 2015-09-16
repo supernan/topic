@@ -17,6 +17,7 @@ namespace ict
 			Topic(std::string &plsa_conf_path);
 			~Topic();
 			bool generate_topics(int thresh, int min_count);
+			bool generate_docs(double match_rate);
 			
 
 		private:
@@ -32,6 +33,7 @@ namespace ict
 			nlp::Plsa *_plsa_ptr;
 
 			std::map<int, std::vector<std::string> > _topic_words;
+			std::map<int, std::vector<WeiboTopic_ICT::Weibo> > _topic_docs;
 	};
 }
 

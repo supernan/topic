@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	string conf_path = "../conf/plsa_conf.xml";
 	ict::Topic topic(conf_path);
 	topic.generate_topics(1, 2);
+	topic.generate_docs(0.2)
 	//string prob_path = "../data";
 	//nlp::Plsa plsa(conf_path);
 	//plsa.load_probs(prob_path);
@@ -27,16 +28,16 @@ int main(int argc, char **argv)
 	//map<int, vector<string> > v;
 	//plsa.get_topic_words(v);
 	
-	/*()tools::AC_automation ac;
-	string word1 = "我爱";
-	string word2 = "asdasdas阿富汗";
-	string word3 = "国人";
+	/*tools::AC_automation ac;
+	string word1 = "国际";
+	string word2 = "物流";
+	string word3 = "瑞";
 	vector<string> w;
 	w.push_back(word1);
 	w.push_back(word2);
 	w.push_back(word3);
 
-	string text = "我是中国人, 我爱中国我爱";
+	string text = "天津爆炸事故该给我们留下什么启示 8月12日晚11时许，天津港国际物流中心区域内瑞海公司所属危险品仓库发生爆炸，截至8月13日中午12时，已造成44人死亡，其中包括12名消防官兵，住院治疗520人，其中重症伤员66人。";
 	ac.build_automation(w);
 	ac.clear();
 	ac.build_automation(w);

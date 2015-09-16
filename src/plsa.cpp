@@ -585,7 +585,7 @@ bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_
 				break;
 			int id = iter->second;
 			string word = _literal_map[id];
-			std::cout<<word<<iter->first<<" ";
+			std::cout<<word<<":"<<iter->first<<" ";
 			topic_words[i].push_back(word);
 			word_count++;
 		}
