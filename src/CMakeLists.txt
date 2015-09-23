@@ -9,6 +9,7 @@ SET(SEC_LIST
 	test.cpp
 	util.cpp
 	plsa.cpp
+	topic.cpp
 	)
 ADD_EXECUTABLE(test ${SEC_LIST})
 TARGET_LINK_LIBRARIES(test libtinyxml.so libNLPIR.so libglog.a pthread)

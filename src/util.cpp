@@ -7,7 +7,7 @@
 
 #include"util.h"
 
-bool tools::Util::read_text_from_local(std::string &local_path, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map)
+bool tools::UtilInterface::read_text_from_local(std::string &local_path, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map)
 {
 	if ((access(local_path.c_str(), F_OK)) == -1)
 	{
@@ -50,7 +50,7 @@ bool tools::Util::read_text_from_local(std::string &local_path, std::map<int, We
 }
 
 
-bool tools::Util::split_line(std::string &line, std::string &key, std::vector<std::string> &word_list)
+bool tools::UtilInterface::split_line(std::string &line, std::string &key, std::vector<std::string> &word_list)
 {
 	int pos = -1;
 	int last_pos = 0;
@@ -84,77 +84,6 @@ bool tools::Util::split_line(std::string &line, std::string &key, std::vector<st
 }
 
 
-void tools::Util::read_words_dict(std::string &path, std::map<int, double> &dict_tf)
-{
-	if ((access(path.c_str(), F_OK)) == -1)
-		LOG(FATAL) << "dict path is wrong" << std::endl;
-	std::ifstream input_stream(path.c_str());
-	std::string line;
-	int count = 0;
-	while (getline(input_stream, line))
-	{
-		std::vector<std::string> parts;
-		std::string key = " ";
-		split_line(line, key, parts);
-		if (parts.size() < 3)
-			LOG(FATAL) << "dict file format is wrong" <<" "<<"line: "<<count<< std::endl;
-		int word_id = atoi(parts[0].c_str());
-		double tf = atof(parts[2].c_str());
-		dict_tf[word_id] = tf;
-		count++;
-	}
-	terms_num = count;
-}
-
-
-void tools::Util::read_doc_tf(std::string &path, double **counts,
-		                      std::map<int, double> &doc_words_map, std::map<int, double> &dict_map)
-{
-	if ((access(path.c_str(), F_OK)) == -1)
-		LOG(FATAL) << "doc path is wrong" << std::endl;
-	std::ifstream input_stream(path.c_str());
-	std::string line;
-	docs_num = 0;
-	while (getline(input_stream, line))
-	{
-		std::vector<std::string> parts;
-		std::string first_key = " ";
-		split_line(line, first_key, parts);
-		if (parts.size() != 2)
-			LOG(FATAL) << "doc file format is wrong :parts size error" <<" "<<"line: "<<docs_num<< std::endl;
-		int doc_id = atoi(parts[0].c_str());
-		double total_words = 0;
-
-		std::vector<std::string> records;
-		std::string second_key = "|";
-		split_line(parts[1], second_key, records);
-
-		for (int i = 0; i < records.size(); i++)
-		{
-			std::string third_key = ":";
-			std::vector<std::string> tfs;
-			split_line(records[i], third_key, tfs);
-			if (tfs.size() != 2)
-				LOG(FATAL) << "doc file format is wrong :tfs size error" << std::endl;
-			else
-			{
-				int term_id = atoi(tfs[0].c_str());
-				double tf = atof(tfs[1].c_str());
-				total_words += tf;
-
-				std::map<int, double>::iterator iter;
-				iter = dict_map.find(term_id);
-				if (iter != dict_map.end())
-					counts[doc_id][term_id] = tf;
-			}
-
-		}
-		docs_num++;
-		doc_words_map[doc_id] = total_words;
-	}
-}
-
-
 tools::AC_automation::AC_automation()
 {
 	_root = new Trie();
@@ -183,7 +112,7 @@ tools::AC_automation::~AC_automation()
 void tools::AC_automation::_insert(Trie *root, std::string &pattern, int id)
 {
 	Trie *cur = root;
-	for (int i = 0; i < pattern.length(); i++)
+	for (unsigned int i = 0; i < pattern.length(); ++i)
 	{
 		if (cur->next.find(pattern[i]) == cur->next.end())
 			cur->next[pattern[i]] = new Trie();
@@ -232,7 +161,7 @@ void tools::AC_automation::_build(Trie *root)
 
 void tools::AC_automation::build_automation(std::vector<std::string> &patterns)
 {
-	for (int i = 0; i < patterns.size(); i++)
+	for (unsigned int i = 0; i < patterns.size(); ++i)
 	{
 		_visit[i] = 0;
 		_insert(_root, patterns[i], i);
@@ -244,10 +173,11 @@ void tools::AC_automation::build_automation(std::vector<std::string> &patterns)
 
 std::map<int, std::string> tools::AC_automation::query(std::string &text)
 {
+	_visit.clear();
 	int ret = 0;
 	std::map<int, std::string> match_patterns;
 	Trie *cur = _root;
-	for (int i = 0; i < text.length(); i++)
+	for (unsigned int i = 0; i < text.length(); ++i)
 	{
 		while (cur->next[text[i]] == NULL && cur != _root)
 			cur = cur->fail;
@@ -279,7 +209,7 @@ void tools::AC_automation::clear()
 }
 
 
-int tools::RelationTree::find_parent(int pos, std::vector<int> &parents)
+int tools::RelationTreeInterface::find_parent(int pos, std::vector<int> &parents)
 {
 	if (pos != parents[pos])
 		parents[pos] = find_parent(parents[pos], parents);
@@ -287,7 +217,7 @@ int tools::RelationTree::find_parent(int pos, std::vector<int> &parents)
 }
 
 
-void tools::RelationTree::union_node(int x, int y, std::vector<int> &parents)
+void tools::RelationTreeInterface::union_node(int x, int y, std::vector<int> &parents)
 {
 	int x_parent = find_parent(x, parents);
 	int y_parent = find_parent(y, parents);
