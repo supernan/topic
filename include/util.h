@@ -155,10 +155,10 @@ namespace tools
 			/*从本地读取文件
 			 *从本地读取文本数据并存入指定的数据结构
 			 *arg1:local[string] 本地存储路径
-			 *arg2:id_doc_map[map] 存储读取到的文档
+			 *arg2:doc_list[map] 存储读取到的文档
 			 *ret[bool] 读取成功返回true否则返回false
 			 */
-			static bool read_text_from_local(std::string &local, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map);
+			static bool read_text_from_local(std::string &local, std::vector<WeiboTopic_ICT::Weibo> &doc_list);
 	};
 
 

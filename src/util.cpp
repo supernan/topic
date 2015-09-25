@@ -7,11 +7,11 @@
 
 #include"util.h"
 
-bool tools::UtilInterface::read_text_from_local(std::string &local_path, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map)
+bool tools::UtilInterface::read_text_from_local(std::string &local_path, std::vector<WeiboTopic_ICT::Weibo> &doc_list)
 {
 	if ((access(local_path.c_str(), F_OK)) == -1)
 	{
-		LOG(FATAL) << "text local path is wrong" << std::endl;
+		LOG(FATAL) << "Text local path is wrong" << std::endl;
 		return false;
 	}
 
@@ -27,7 +27,7 @@ bool tools::UtilInterface::read_text_from_local(std::string &local_path, std::ma
 		{
 			if (parts.size() < 2)
 			{
-				LOG(FATAL) << "text format error: " <<doc_count<<" "<< line <<std::endl;
+				LOG(FATAL) << "Text format error: " <<doc_count<<" "<< line <<std::endl;
 				return false;
 			}
 			std::string text = parts[1];
@@ -36,12 +36,12 @@ bool tools::UtilInterface::read_text_from_local(std::string &local_path, std::ma
 			doc.index = doc_count;
 			doc.mt = text;
 			doc.pt = utc_time;
-			id_doc_map[doc.index] = doc;
+			doc_list.push_back(doc);
 			doc_count += 1;
 		}
 		else
 		{
-			LOG(FATAL) << "text format error: " <<doc_count<<" "<< line <<std::endl;
+			LOG(FATAL) << "Text format error: " <<doc_count<<" "<< line <<std::endl;
 			return false;
 		}
 
@@ -173,7 +173,7 @@ void tools::AC_automation::build_automation(std::vector<std::string> &patterns)
 
 std::map<int, std::string> tools::AC_automation::query(std::string &text)
 {
-	_visit.clear();
+	_visit.clear(); //TODO(zhounan) 全赋值为0 or 清空
 	int ret = 0;
 	std::map<int, std::string> match_patterns;
 	Trie *cur = _root;

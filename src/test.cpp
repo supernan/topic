@@ -9,7 +9,7 @@
 #include"const.h"
 #include"util.h"
 #include"plsa.h"
-#include"topic.h"
+#include"subtopic.h"
 using namespace std;
 int main(int argc, char **argv)
 {
@@ -18,9 +18,14 @@ int main(int argc, char **argv)
 	google::SetLogDestination(google::GLOG_INFO,"../log/");
 	FLAGS_colorlogtostderr=true;
 	string conf_path = "../conf/plsa_conf.xml";
-	ict::Topic topic(conf_path);
-	topic.generate_topics(1, 3);
-	topic.generate_docs(0.2);
+	string local_path = "../data/tianjin_text";
+	ict::SubTopic sub_topic(conf_path);
+	vector<WeiboTopic_ICT::Weibo> doc_list;
+	vector<WeiboTopic_ICT::Topic> topic_list;
+	tools::UtilInterface::read_text_from_local(local_path, doc_list);
+	sub_topic.generate_sub_topics(doc_list, topic_list);
+	//sub_topic.generate_sub_topics(1, 3);
+	//sub_topic.generate_docs(0.2);
 	//string prob_path = "../data";
 	//nlp::Plsa plsa(conf_path);
 	//plsa.load_probs(prob_path);

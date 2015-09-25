@@ -201,10 +201,15 @@ bool nlp::Plsa::_preprocess()
 	std::map<std::string, int> tmp_tf_map; //临时变量,初步分词结果到词频的映射
 	std::map<std::string, int> tmp_word_map; //临时变量, 字典中词到词id的映射
 	std::set<std::string> stop_set;
-	if (!tools::UtilInterface::read_text_from_local(_local_path, _id_doc_map))
+	if (_id_doc_map.empty())
 	{
-		LOG(ERROR) << "Read text from local failed" <<std::endl;
-		return false;
+		std::vector<WeiboTopic_ICT::Weibo> doc_list;
+		if (!tools::UtilInterface::read_text_from_local(_local_path, doc_list))
+		{
+			LOG(ERROR) << "Read text from local failed" <<std::endl;
+			return false;
+		}
+		set_documents(doc_list);
 	}
 	if (!_load_stop_words(stop_set))
 	{
@@ -344,6 +349,10 @@ void nlp::Plsa::_init_latent_variable()
 				lm_prob = 0.0;
 			else
 				lm_prob = double(_counts[i][j]) / double(_doc_words_map[i]); //unigram
+			if (isnan(lm_prob))
+			{
+				LOG(FATAL)<<"Language model init error! NAN"<<std::endl;
+			}
 			_doc_term_probs[i][j][LM] = lm_prob;
 			std::vector<int> random_nums;
 			int total = 0;
@@ -356,6 +365,10 @@ void nlp::Plsa::_init_latent_variable()
 			for (int k = 0; k < _topics_nums; ++k)
 			{
 				double prob = double(random_nums[k]) / double(total);
+				if (isnan(prob))
+				{
+					LOG(FATAL)<<"Latent init error! NAN"<<std::endl;
+				}
 				_doc_term_probs[i][j][k] = prob;
 			}
 		}
@@ -369,10 +382,10 @@ void nlp::Plsa::_init_latent_variable()
 
 void nlp::Plsa::_calc_latent_variable()
 {
-	LOG(INFO) <<"calc z"<<std::endl;
+	LOG(INFO) <<"Calc latent"<<std::endl;
 	clock_t start,finish;
 	double total_time = 0.0;
-	start=clock();
+	start = clock();
 	#pragma omp parallel for
 	for (int i = 0; i < _docs_nums; ++i)
 	{
@@ -383,33 +396,38 @@ void nlp::Plsa::_calc_latent_variable()
 			{
 				double prob = _doc_probs[i][k] * _term_probs[j][k];
 				_doc_term_probs[i][j][k] = prob;
-				//std::cout<<k<<" "<<prob<<std::endl;
 				topic_sum += prob;
 			}
 			for (int k = 0; k < _topics_nums; ++k)
 			{
 				if (_doc_term_probs[i][j][k] != 0)
 					_doc_term_probs[i][j][k] /= topic_sum;
-				//std::cout<<_doc_term_probs[i][j][k]<<std::endl;
+				if (isnan(_doc_term_probs[i][j][k]))
+				{
+					LOG(FATAL)<<"Calc latent error! NAN"<<std::endl;
+				}
 			}
 			double lm_prob = _tfs_map[j];
 			_doc_term_probs[i][j][LM] = (_lambda * lm_prob) / (_lambda * lm_prob + (1 - _lambda) * topic_sum);
-			//std::cout<<_doc_term_probs[i][j][LM]<<std::endl;
+			if (isnan(_doc_term_probs[i][j][LM]))
+			{
+				LOG(FATAL)<<"Calc latent error! NAN"<<std::endl;
+			}
 		}
 	}
 	finish = clock();
-	total_time=(double)(finish-start)/CLOCKS_PER_SEC;
-	LOG(INFO) <<"calc z finish"<<" "<<total_time<<"s"<<std::endl;
+	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
+	LOG(INFO) <<"Calc latent finish"<<" "<<total_time<<"s"<<std::endl;
 
 }
 
 
 void nlp::Plsa::_calc_doc_prob()
 {
-	LOG(INFO) <<"calc pi"<<std::endl;
-	clock_t start,finish;
+	LOG(INFO) <<"Calc doc prob"<<std::endl;
+	clock_t start, finish;
 	double total_time = 0.0;
-	start=clock();
+	start = clock();
 	#pragma omp parallel for
 	for (int i = 0; i < _docs_nums; ++i)
 	{
@@ -420,7 +438,6 @@ void nlp::Plsa::_calc_doc_prob()
 			for (int j = 0; j < _terms_nums; ++j)
 			{
 				term_sum += _counts[i][j] * (1 - _doc_term_probs[i][j][LM]) * _doc_term_probs[i][j][k];
-				//std::cout<<_counts[i][j]<<" "<<" "<<_doc_term_probs[i][j][LM]<<" "<<_doc_term_probs[i][j][k]<<" "<<term_sum<<std::endl;
 			}
 			_doc_probs[i][k] = term_sum;
 			topic_sum += term_sum;
@@ -429,22 +446,25 @@ void nlp::Plsa::_calc_doc_prob()
 		{
 			if (_doc_probs[i][k] != 0)
 				_doc_probs[i][k] /= topic_sum;
-			//std::cout<<"doc_prob"<<" "<<i<<" "<<k<<" "<<_doc_probs[i][k]<<std::endl;
+			if (isnan(_doc_probs[i][k]))
+			{
+				LOG(FATAL)<<"Calc doc prob error! NAN"<<std::endl;
+			}
 		}
 
 	}
 	finish = clock();
-	total_time=(double)(finish-start)/CLOCKS_PER_SEC;
-	LOG(INFO)<<"calc pi finish"<<" "<<total_time<<"s"<<std::endl;
+	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
+	LOG(INFO)<<"Calc doc prob finish"<<" "<<total_time<<"s"<<std::endl;
 }
 
 
 void nlp::Plsa::_calc_term_prob()
 {
-	LOG(INFO) <<"calc term prob"<<std::endl;
-	clock_t start,finish;
+	LOG(INFO) <<"Calc term prob"<<std::endl;
+	clock_t start, finish;
 	double total_time = 0.0;
-	start=clock();
+	start = clock();
 	#pragma omp parallel for
 	for (int k = 0; k < _topics_nums; ++k)
 	{
@@ -454,33 +474,34 @@ void nlp::Plsa::_calc_term_prob()
 			double doc_sum = 0.0;
 			for (int i = 0; i < _docs_nums; ++i)
 			{
-				//std::cout<<_counts[i][j]<<" "<<_doc_term_probs[i][j][LM]<<" "<<_doc_term_probs[i][j][k]<<std::endl;
 				doc_sum += _counts[i][j] * (1 - _doc_term_probs[i][j][LM]) * _doc_term_probs[i][j][k];
 			}
 			term_sum += doc_sum;
-			//std::cout<<doc_sum<<std::endl;
 			_term_probs[j][k] = doc_sum;
 		}
 		for (int j = 0; j < _terms_nums; ++j)
 		{
 			if (_term_probs[j][k] != 0)
 				_term_probs[j][k] /= term_sum;
-			//std::cout<<"term "<<j<<" "<<k<<" "<<_term_probs[j][k]<<std::endl;
+			if (isnan(_term_probs[j][k]))
+			{
+				LOG(FATAL)<<"Calc term prob error! NAN"<<std::endl;
+			}
 		}
 	}
 	finish = clock();
-	total_time=(double)(finish-start)/CLOCKS_PER_SEC;
-	LOG(INFO) <<"calc term finish"<<" "<<total_time<<"s"<<std::endl;
+	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
+	LOG(INFO) <<"Calc term finish"<<" "<<total_time<<"s"<<std::endl;
 }
 
 
-void nlp::Plsa::_init_args()
+void nlp::Plsa::_init_EM()
 {
-	std::cout<<"init args"<<std::endl;
+	std::cout<<"Init EM args"<<std::endl;
 	_init_latent_variable();
 	_calc_doc_prob();
 	_calc_term_prob();
-	std::cout<<"init args end"<<std::endl;
+	std::cout<<"Init EM args end"<<std::endl;
 }
 
 
@@ -515,41 +536,44 @@ void nlp::Plsa::_destroy_intermedian_variable()
 
 bool nlp::Plsa::train_plsa()
 {
-	LOG(INFO) << "train PLSA" <<std::endl;
+	LOG(INFO) << "Train PLSA" <<std::endl;
 	if (!_preprocess())
 	{
-		LOG(FATAL) << "preprocess failed !"<<std::endl;
+		LOG(FATAL) << "Preprocess failed !"<<std::endl;
 		return false;
 	}
-	else
+	if (_docs_nums <= 0 || _terms_nums <= 0 || _topics_nums <= 0)
 	{
-		LOG(INFO) << "preprocess succeed" <<"doc:" <<_docs_nums << " " <<"terms: "<< _terms_nums<<std::endl;
-		_allocate_latent_variable();
-		_init_probs();
-		_init_args();
-		for (int i = 0; i < _iter_nums; ++i)
-		{
-			LOG(INFO) <<i<<"th iteration"<<std::endl;
-			std::cout<<i<<"th iteration"<<std::endl;
-			_Estep();
-			_Mstep();
-		}
-		std::string save_path = "../data";
-		save_probs(save_path);
-		_destroy_intermedian_variable();
-		return true;
+		LOG(FATAL)<<"doc: "<<_docs_nums<<" term: "<<_terms_nums<<" topic: "<<_topics_nums<<std::endl;
+		return false;
 	}
+	LOG(INFO) << "Preprocess succeed " <<"doc:" <<_docs_nums << " " <<"terms: "<< _terms_nums<<std::endl;
+	_allocate_latent_variable();
+	_init_probs();
+	_init_EM();
+	for (int i = 0; i < _iter_nums; ++i)
+	{
+		LOG(INFO) <<i<<"th iteration"<<std::endl;
+		std::cout<<i<<"th iteration"<<std::endl;
+		_Estep();
+		_Mstep();
+	}
+	std::string save_path = "../data";
+	save_probs(save_path);
+	_destroy_intermedian_variable();
+	return true;
+	
 }
 
 
 bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_words)
 {
-	LOG(INFO) << "get topic words" << std::endl;
-	std::map<int, std::map<double, int> > tmp_word_map;
+	LOG(INFO) << "Get PLSA topic words" << std::endl;
+	std::map<int, std::map<double, int> > tmp_word_map; //临时变量　存储话题id与词－tf对的映射
 	for (int i = 0; i < _topics_nums; ++i)
 	{
 		std::vector<std::string> words;
-		std::map<double, int> prob_map;
+		std::map<double, int> prob_map; //以tf为键可以利用map默认的排序方式实现排序
 		topic_words[i] = words;
 		tmp_word_map[i] = prob_map;
 	}
@@ -558,6 +582,11 @@ bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_
 	{
 		for (int j = 0; j < _terms_nums; ++j)
 		{
+			if (isnan(_term_probs[j][i]))
+			{
+				LOG(FATAL)<<"Get PLSA topic error! NAN"<<std::endl;
+				return false;
+			}
 			double prob =  - (_term_probs[j][i]); //map 默认按照key从小到大排序, 取相反数逆序排
 			tmp_word_map[i][prob] = j;
 		}
@@ -569,18 +598,20 @@ bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_
 		int word_count = 0;
 		for (iter = tmp_word_map[i].begin(); iter != tmp_word_map[i].end(); ++iter)
 		{
-			if (word_count >= 10)
+			if (word_count >= 10) //取每个话题tf前10的词作为话题关键词
 				break;
 			int id = iter->second;
 			string word = _literal_map[id];
-			std::cout<<word<<":"<<iter->first<<" ";
+			LOG(INFO)<<word<<":"<<iter->first<<" ";
+			std::cout<<word<<":"<<iter->first<<" "; //TODO(zhounan) 将话题词输出到屏幕，后期可修改此处
 			topic_words[i].push_back(word);
 			word_count++;
 		}
-		std::cout<<endl;
+		std::cout<<std::endl; //TODO(zhounan)
+		LOG(INFO)<<std::endl;
 	}
 	
-	LOG(INFO) << "get topic words succeed" << std::endl;
+	LOG(INFO) << "Get PLSA topic words succeed" << std::endl;
 	return true;
 }
 
@@ -593,7 +624,7 @@ std::map<int, WeiboTopic_ICT::Weibo> nlp::Plsa::get_documents() const
 
 void nlp::Plsa::save_probs(std::string &path)
 {
-	LOG(INFO) << "save probs" << std::endl;
+	LOG(INFO) << "Save probs" << std::endl;
 	std::string term_path = path + "/term_probs";
 	std::string doc_path = path + "/doc_probs";
 	std::string dict_path = path + "/dict";
@@ -642,20 +673,20 @@ bool nlp::Plsa::load_probs(std::string &path)
 	std::string term_path = path + "/term_probs";
 	std::string doc_path = path + "/doc_probs";
 	std::string dict_path = path + "/dict";
-	LOG(INFO) << "load probs" << std::endl;
+	LOG(INFO) << "Load probs" << std::endl;
 	if ((access(term_path.c_str(), F_OK)) == -1)
 	{
-		LOG(FATAL) << "term probs path is wrong" << std::endl;
+		LOG(FATAL) << "Term probs path is wrong" << std::endl;
 		return false;
 	}
 	if ((access(doc_path.c_str(), F_OK)) == -1)
 	{
-		LOG(FATAL) << "doc probs path is wrong" << std::endl;
+		LOG(FATAL) << "Doc probs path is wrong" << std::endl;
 		return false;
 	}
 	if ((access(dict_path.c_str(), F_OK)) == -1)
 	{
-		LOG(FATAL) << "dict probs path is wrong" << std::endl;
+		LOG(FATAL) << "Dict probs path is wrong" << std::endl;
 		return false;
 	}
 	std::ifstream term_in(term_path.c_str());
@@ -706,6 +737,16 @@ bool nlp::Plsa::load_probs(std::string &path)
 		dict_in >> id >> word;
 		_literal_map[id] = word;
 	}
-	LOG(INFO) << "load probs succeed" << std::endl;
+	LOG(INFO) << "Load probs succeed" << std::endl;
 	return true;
+}
+
+
+void nlp::Plsa::set_documents(std::vector<WeiboTopic_ICT::Weibo> &doc_list)
+{
+	_id_doc_map.clear();
+	for (unsigned int i = 0; i < doc_list.size(); i++)
+	{
+		_id_doc_map[i] = doc_list[i];
+	}
 }

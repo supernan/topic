@@ -72,7 +72,6 @@ namespace nlp
 			/*保存训练好的模型参数
 			 *将训练好的doc-topic word-topic概率保存
 			 *arg1:path[string] 保存路径
-			 *ret[bool]: 保存成功返回true否则false
 			 */
 			void save_probs(std::string &path);
 			
@@ -82,6 +81,12 @@ namespace nlp
 			 *ret[bool]: 加载成功返回true否则返回false
 			 */
 			bool load_probs(std::string &path);
+
+
+			/*设置语料集合
+			 *接受从外部传入的语料
+			 */
+			void set_documents(std::vector<WeiboTopic_ICT::Weibo> &doc_list);
 		
 		private:
 
@@ -177,7 +182,7 @@ namespace nlp
 			/*算法参数初始化
 			 *EM算法所需参数的初始化
 			 */
-			void _init_args();
+			void _init_EM();
 
 
 			/*E步骤
