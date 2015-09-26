@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	vector<WeiboTopic_ICT::Weibo> doc_list;
 	vector<WeiboTopic_ICT::Topic> topic_list;
 	tools::UtilInterface::read_text_from_local(local_path, doc_list);
-	sub_topic.generate_sub_topics(doc_list, topic_list);
+	sub_topic.generate_sub_topics(doc_list, topic_list, 2, 3, 0.6);
 	//sub_topic.generate_sub_topics(1, 3);
 	//sub_topic.generate_docs(0.2);
 	//string prob_path = "../data";

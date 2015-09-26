@@ -8,6 +8,7 @@
 #include<time.h>
 #include<omp.h>
 #include<math.h>
+#include<memory.h>
 #include<iostream>
 #include<map>
 #include<set>
@@ -157,26 +158,16 @@ namespace nlp
 			
 			/*随机初始化隐变量
 			 *为隐变量赋予随机值并归一化
+			 *arg1:id[int] 文档id
 			 */
-			void _init_latent_variable();
+			void _init_latent_variable(int id);
 
 
 			/*迭代中计算隐变量
 			 *EM算法计算隐变量
+			 *arg1:id[int] 文档id
 			 */
-			void _calc_latent_variable();
-
-
-			/*迭代计算每篇文档在所有话题上的分布
-			 *根据中间隐变量和文档tf计算在话题上的分布
-			 */
-			void _calc_doc_prob();
-
-
-			/*迭代计算每个词在所有话题上的分布
-			 *根据中间隐变量计算词在话题上的分布
-			 */
-			void _calc_term_prob();
+			void _calc_latent_variable(int id);
 
 
 			/*算法参数初始化
@@ -185,22 +176,30 @@ namespace nlp
 			void _init_EM();
 
 
-			/*E步骤
-			 *EM算法E步骤
+			/*实现EM算法
+			 *
 			 */
-			void _Estep();
-
-
-			/*M步骤
-			 *EM算法M步骤
-			 */
-			void _Mstep();
+			void _EM_process();
 
 
 			/*释放中间变量
 			 *释放隐变量和doc-tf数组的内存空间
 			 */
 			void _destroy_intermedian_variable();
+
+			
+			/*计算单独一篇文档的话题分布
+			 * arg1:id[int] 文档id
+			 */
+			void _calc_single_doc_prob(int id);
+
+
+			/*计算单独一个词的话题分布
+			 *arg1:id[int] 文档id
+			 *arg2:total[double*] 各个话题的累计量
+			 */
+			void _calc_single_term_prob(int id, double *total);
+
 
 
 			std::string _local_path; //本地语料路径
@@ -218,7 +217,7 @@ namespace nlp
 			std::map<int, std::string> _literal_map; // id字面对应表
 	        double **_doc_probs; //[MAX_DOCS][MAX_TOPICS]; //文档属于某个主题的概率 PI
 	        double **_term_probs; //[MAX_TERMS][MAX_TOPICS]; //词属于某个主题的概率 P(w|j)
-	        double ***_doc_term_probs; //[MAX_DOCS][MAX_TERMS][MAX_TOPICS]; //文档中的某个词属于某个主题的概率 Z(d,w)
+	        double **_latent; //优化处理所需的隐变量 [V[K]
 	        double **_counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
 
 	};

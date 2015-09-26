@@ -286,28 +286,19 @@ void nlp::Plsa::_init_probs()
 void nlp::Plsa::_allocate_latent_variable()
 {
 	LOG(INFO) << "Init latent variable" << std::endl;
-	_doc_term_probs = new double**[_docs_nums];
+	_latent = new double*[_terms_nums];
 	
 	#pragma omp parallel for
-	for (int i = 0; i < _docs_nums; ++i)
+	for (int i = 0; i < _terms_nums; ++i)
 	{
-		_doc_term_probs[i] = new double*[_terms_nums];
-		for (int j = 0; j < _terms_nums; ++j)
-		{
-			_doc_term_probs[i][j] = new double[MAX_TOPICS];
-		}
+		_latent[i] = new double[MAX_TOPICS];
 	}
 
 	#pragma omp parallel for
-	for (int i = 0; i < _docs_nums; ++i)
+	for (int i = 0; i < _terms_nums; ++i)
 	{
-		for (int j = 0; j < _terms_nums; ++j)
-		{
-			for (int k = 0; k < MAX_TOPICS; ++k)
-			{
-				_doc_term_probs[i][j][k] = 0.0;
-			}
-		}
+		for (int k = 0; k < MAX_TOPICS; ++k)
+			_latent[i][k] = 0.0;
 	}
 }
 
@@ -331,7 +322,7 @@ nlp::Plsa::~Plsa()
 }
 
 
-void nlp::Plsa::_init_latent_variable()
+void nlp::Plsa::_init_latent_variable(int id)
 {
 	LOG(INFO) << "Init latent variable z" << std::endl;
 	srand(time(0));
@@ -339,39 +330,37 @@ void nlp::Plsa::_init_latent_variable()
 	clock_t start, finish;
 	double total_time = 0.0;
 	start = clock();
-	for (int i = 0; i < _docs_nums; ++i)
+	#pragma omp parallel for
+	for (int j = 0; j < _terms_nums; ++j)
 	{
-		#pragma omp parallel for
-		for (int j = 0; j < _terms_nums; ++j)
+		double lm_prob = 0.0; //背景语言模型概率
+		if (_doc_words_map[id] == 0)
+			lm_prob = 0.0;
+		else
+			lm_prob = double(_counts[id][j]) / double(_doc_words_map[id]); //unigram
+		if (isnan(lm_prob))
 		{
-			double lm_prob = 0.0; //背景语言模型概率
-			if (_doc_words_map[i] == 0)
-				lm_prob = 0.0;
-			else
-				lm_prob = double(_counts[i][j]) / double(_doc_words_map[i]); //unigram
-			if (isnan(lm_prob))
-			{
-				LOG(FATAL)<<"Language model init error! NAN"<<std::endl;
-			}
-			_doc_term_probs[i][j][LM] = lm_prob;
-			std::vector<int> random_nums;
-			int total = 0;
-			for (int k = 0; k < _topics_nums; ++k) //TODO(zhounan) 随机初始化这一步效率低，需优化
-			{
-				int num = rand()%100 + 1;
-				random_nums.push_back(num);
-				total += num;
-			}
-			for (int k = 0; k < _topics_nums; ++k)
-			{
-				double prob = double(random_nums[k]) / double(total);
-				if (isnan(prob))
-				{
-					LOG(FATAL)<<"Latent init error! NAN"<<std::endl;
-				}
-				_doc_term_probs[i][j][k] = prob;
-			}
+			LOG(FATAL)<<"Language model init error! NAN"<<std::endl;
 		}
+		_latent[j][LM] = lm_prob;
+		std::vector<int> random_nums;
+		int total = 0;
+		for (int k = 0; k < _topics_nums; ++k) //TODO(zhounan) 随机初始化这一步效率低，需优化
+		{
+			int num = rand()%100 + 1;
+			random_nums.push_back(num);
+			total += num;
+		}
+		for (int k = 0; k < _topics_nums; ++k)
+		{
+			double prob = double(random_nums[k]) / double(total);
+			if (isnan(prob))
+			{
+				LOG(FATAL)<<"Latent init error! NAN"<<std::endl;
+			}
+			_latent[j][k] = prob;
+		}
+
 	}
 	finish = clock();
 	total_time = (double)(finish-start) / CLOCKS_PER_SEC;
@@ -380,39 +369,37 @@ void nlp::Plsa::_init_latent_variable()
 }
 
 
-void nlp::Plsa::_calc_latent_variable()
+void nlp::Plsa::_calc_latent_variable(int id)
 {
 	LOG(INFO) <<"Calc latent"<<std::endl;
 	clock_t start,finish;
 	double total_time = 0.0;
 	start = clock();
 	#pragma omp parallel for
-	for (int i = 0; i < _docs_nums; ++i)
+	for (int j = 0; j < _terms_nums; ++j)
 	{
-		for (int j = 0; j < _terms_nums; ++j)
+		double topic_sum = 0.0;
+		for (int k = 0; k < _topics_nums; ++k)
 		{
-			double topic_sum = 0.0;
-			for (int k = 0; k < _topics_nums; ++k)
+			double prob = _doc_probs[id][k] * _term_probs[j][k];
+			//std::cout<<j<<" "<<k<<" "<<std::endl;
+			_latent[j][k] = prob;
+			topic_sum += prob;
+		}
+		for (int k = 0; k < _topics_nums; ++k)
+		{
+			if (_latent[j][k] != 0)
+				_latent[j][k] /= topic_sum;
+			if (isnan(_latent[j][k]))
 			{
-				double prob = _doc_probs[i][k] * _term_probs[j][k];
-				_doc_term_probs[i][j][k] = prob;
-				topic_sum += prob;
+				LOG(FATAL)<<"Calc latent[j][k] error! NAN"<<std::endl;
 			}
-			for (int k = 0; k < _topics_nums; ++k)
-			{
-				if (_doc_term_probs[i][j][k] != 0)
-					_doc_term_probs[i][j][k] /= topic_sum;
-				if (isnan(_doc_term_probs[i][j][k]))
-				{
-					LOG(FATAL)<<"Calc latent error! NAN"<<std::endl;
-				}
-			}
-			double lm_prob = _tfs_map[j];
-			_doc_term_probs[i][j][LM] = (_lambda * lm_prob) / (_lambda * lm_prob + (1 - _lambda) * topic_sum);
-			if (isnan(_doc_term_probs[i][j][LM]))
-			{
-				LOG(FATAL)<<"Calc latent error! NAN"<<std::endl;
-			}
+		}
+		double lm_prob = _tfs_map[j];
+		_latent[j][LM] = (_lambda * lm_prob) / (_lambda * lm_prob + (1 - _lambda) * topic_sum);
+		if (isnan(_latent[j][LM]))
+		{
+			LOG(FATAL)<<"Calc latent[j][LM] error! NAN"<<std::endl;
 		}
 	}
 	finish = clock();
@@ -422,115 +409,111 @@ void nlp::Plsa::_calc_latent_variable()
 }
 
 
-void nlp::Plsa::_calc_doc_prob()
+void nlp::Plsa::_calc_single_doc_prob(int id)
 {
-	LOG(INFO) <<"Calc doc prob"<<std::endl;
-	clock_t start, finish;
-	double total_time = 0.0;
-	start = clock();
-	#pragma omp parallel for
-	for (int i = 0; i < _docs_nums; ++i)
-	{
-		double topic_sum = 0.0;
-		for (int k = 0; k < _topics_nums; ++k)
-		{
-			double term_sum = 0.0;
-			for (int j = 0; j < _terms_nums; ++j)
-			{
-				term_sum += _counts[i][j] * (1 - _doc_term_probs[i][j][LM]) * _doc_term_probs[i][j][k];
-			}
-			_doc_probs[i][k] = term_sum;
-			topic_sum += term_sum;
-		}
-		for (int k = 0; k < _topics_nums; ++k)
-		{
-			if (_doc_probs[i][k] != 0)
-				_doc_probs[i][k] /= topic_sum;
-			if (isnan(_doc_probs[i][k]))
-			{
-				LOG(FATAL)<<"Calc doc prob error! NAN"<<std::endl;
-			}
-		}
-
-	}
-	finish = clock();
-	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
-	LOG(INFO)<<"Calc doc prob finish"<<" "<<total_time<<"s"<<std::endl;
-}
-
-
-void nlp::Plsa::_calc_term_prob()
-{
-	LOG(INFO) <<"Calc term prob"<<std::endl;
-	clock_t start, finish;
-	double total_time = 0.0;
-	start = clock();
+	double topic_sum = 0.0;
 	#pragma omp parallel for
 	for (int k = 0; k < _topics_nums; ++k)
 	{
 		double term_sum = 0.0;
 		for (int j = 0; j < _terms_nums; ++j)
 		{
-			double doc_sum = 0.0;
-			for (int i = 0; i < _docs_nums; ++i)
-			{
-				doc_sum += _counts[i][j] * (1 - _doc_term_probs[i][j][LM]) * _doc_term_probs[i][j][k];
-			}
-			term_sum += doc_sum;
-			_term_probs[j][k] = doc_sum;
+			term_sum += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
 		}
-		for (int j = 0; j < _terms_nums; ++j)
+		_doc_probs[id][k] = term_sum;
+		topic_sum += term_sum;
+	}
+	for (int k = 0; k < _topics_nums; ++k)
+	{
+		if (topic_sum > 0 && _doc_probs[id][k] != 0)
+			_doc_probs[id][k] /= topic_sum;
+		if (isnan(_doc_probs[id][k]))
 		{
-			if (_term_probs[j][k] != 0)
-				_term_probs[j][k] /= term_sum;
-			if (isnan(_term_probs[j][k]))
+			LOG(FATAL)<<"Calc doc prob error! NAN"<<std::endl;
+		}
+	}
+	
+}
+
+
+void nlp::Plsa::_calc_single_term_prob(int id, double *total)
+{
+	for (int j = 0; j < _terms_nums; ++j)
+	{
+		for (int k = 0; k < _topics_nums; ++k)
+		{
+			_term_probs[j][k] += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
+			total[k] += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
+			if (isnan(_term_probs[j][k]) or isnan(total[k]))
 			{
-				LOG(FATAL)<<"Calc term prob error! NAN"<<std::endl;
+				LOG(FATAL)<<"Calc single term prob NAN"<<std::endl;
 			}
 		}
 	}
-	finish = clock();
-	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
-	LOG(INFO) <<"Calc term finish"<<" "<<total_time<<"s"<<std::endl;
 }
 
 
 void nlp::Plsa::_init_EM()
 {
 	std::cout<<"Init EM args"<<std::endl;
-	_init_latent_variable();
-	_calc_doc_prob();
-	_calc_term_prob();
+	double *total = new double[_topics_nums];
+	memset(total, 0, sizeof(double)*_topics_nums);
+	for (int i = 0; i < _docs_nums; ++i)
+	{
+		_init_latent_variable(i);
+		_calc_single_doc_prob(i);
+		_calc_single_term_prob(i, total);
+	}
+	for (int j = 0; j < _terms_nums; ++j)
+	{
+		for (int k = 0; k < _topics_nums; ++k)
+		{
+			if (total[k] > 0 && _term_probs[j][k] != 0)
+				_term_probs[j][k] /= total[k];
+			if (isnan(_term_probs[j][k]))
+			{
+				LOG(FATAL)<<"Calc term prob error! NAN"<<std::endl;
+			}
+		}
+	}
 	std::cout<<"Init EM args end"<<std::endl;
 }
 
 
-void nlp::Plsa::_Estep()
+void nlp::Plsa::_EM_process()
 {
-	_calc_latent_variable();
-}
-
-
-void nlp::Plsa::_Mstep()
-{
-	_calc_doc_prob();
-	_calc_term_prob();
+	double *total = new double[_topics_nums];
+	memset(total, 0, sizeof(double)*_topics_nums);
+	for (int i = 0; i < _docs_nums; ++i)
+	{
+		_calc_latent_variable(i);
+		_calc_single_doc_prob(i);
+		_calc_single_term_prob(i, total);
+	}
+	for (int j = 0; j < _terms_nums; ++j)
+	{
+		for (int k = 0; k < _topics_nums; ++k)
+		{
+			if (total[k] > 0 && _term_probs[j][k] != 0)
+				_term_probs[j][k] /= total[k];
+			if (isnan(_term_probs[j][k]))
+			{
+				LOG(FATAL)<<"Calc term prob error! NAN"<<std::endl;
+			}
+		}
+	}
 }
 
 
 void nlp::Plsa::_destroy_intermedian_variable()
 {
-	for (int i = 0; i < _docs_nums; ++i)
-	{
-		for (int j = 0; j < _terms_nums; ++j)
-			delete _doc_term_probs[i][j];
-		delete _doc_term_probs[i];
-	}
+	for (int i = 0; i < _terms_nums; ++i)
+		delete _latent[i];
 	for (int i = 0; i < _docs_nums; ++i)
 		delete _counts[i];
 	
-	delete _doc_term_probs;
 	delete _counts;
+	delete _latent;
 }
 
 
@@ -555,8 +538,7 @@ bool nlp::Plsa::train_plsa()
 	{
 		LOG(INFO) <<i<<"th iteration"<<std::endl;
 		std::cout<<i<<"th iteration"<<std::endl;
-		_Estep();
-		_Mstep();
+		_EM_process();
 	}
 	std::string save_path = "../data";
 	save_probs(save_path);
