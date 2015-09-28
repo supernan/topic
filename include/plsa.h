@@ -166,8 +166,9 @@ namespace nlp
 			/*迭代中计算隐变量
 			 *EM算法计算隐变量
 			 *arg1:id[int] 文档id
+			 *arg2:term_probs[double**] 计算隐变量所需的词语话题分布
 			 */
-			void _calc_latent_variable(int id);
+			void _calc_latent_variable(int id, double **term_probs);
 
 
 			/*算法参数初始化
@@ -177,9 +178,9 @@ namespace nlp
 
 
 			/*实现EM算法
-			 *
+			 *arg1:term_flg[int] 开关变量初始值为1
 			 */
-			void _EM_process();
+			void _EM_process(bool &term_flg);
 
 
 			/*释放中间变量
@@ -197,10 +198,28 @@ namespace nlp
 			/*计算单独一个词的话题分布
 			 *arg1:id[int] 文档id
 			 *arg2:total[double*] 各个话题的累计量
+			 *arg3:term_prob[double**] 需要更新的词语话题分布变量
 			 */
-			void _calc_single_term_prob(int id, double *total);
+			void _calc_term_prob(int id, double *total, double **term_probs);
 
 
+			/*清空临时term_prob对象
+			 *arg1:term_prob[double**] 要重置的词语话题分布变量
+			 */
+			void _clear_term_probs(double **term_probs);
+
+
+			/*词语话题分布归一化
+			 *arg1:term_probs[double**] 需要归一化的词语话题分布
+			 *arg2:total[double*] 针对不同话题统计的累计量
+			 */
+			void _term_normalization(double **_term_probs, double *total);
+
+
+			/*将词语话题分布归并得到最终计算结果
+			 */
+			void _merge_term_probs();
+			
 
 			std::string _local_path; //本地语料路径
 			std::string _stop_words_path; //停用词路径
@@ -217,8 +236,10 @@ namespace nlp
 			std::map<int, std::string> _literal_map; // id字面对应表
 	        double **_doc_probs; //[MAX_DOCS][MAX_TOPICS]; //文档属于某个主题的概率 PI
 	        double **_term_probs; //[MAX_TERMS][MAX_TOPICS]; //词属于某个主题的概率 P(w|j)
-	        double **_latent; //优化处理所需的隐变量 [V[K]
+			double **_term_probs_bak; //更新词语话题分布时的辅助变量
+	        double **_latent; //优化处理所需的隐变量 [V][K]
 	        double **_counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
+			//std::map<int, std::map<int, double> > _counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
 
 	};
 }
