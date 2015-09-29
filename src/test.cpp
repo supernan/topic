@@ -13,10 +13,6 @@
 using namespace std;
 int main(int argc, char **argv)
 {
-	google::InitGoogleLogging(argv[0]);
-	google::SetStderrLogging(google::ERROR);
-	google::SetLogDestination(google::GLOG_INFO,"../log/");
-	FLAGS_colorlogtostderr=true;
 	string conf_path = "../conf/plsa_conf.xml";
 	string local_path = "/home/zhounan/corpus/mongo_data/explosion_text";
 	//string local_path = "../data/tianjin_text";

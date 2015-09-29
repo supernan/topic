@@ -9,6 +9,23 @@
 
 ict::SubTopic::SubTopic(std::string &plsa_conf_path)
 {
+	if (access("../log", F_OK) != 0)
+	{
+		if (!mkdir("../log", S_IRWXU))
+		{
+			std::cout<<"Create Log Succeed"<<std::endl;
+		}
+		else
+		{
+			std::cout<<"Create Log Failed"<<std::endl;
+		}
+
+	}
+	google::InitGoogleLogging("SubTopic");
+	google::SetStderrLogging(google::ERROR);
+	google::SetLogDestination(google::GLOG_INFO,"../log/");
+	FLAGS_colorlogtostderr=true;
+	
 	_plsa_ptr = new nlp::Plsa(plsa_conf_path);
 	_mation_ptr = new tools::AC_automation();
 }

@@ -71,6 +71,11 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 		                std::map<std::string, int> &tmp_tf_map)
 {
 	LOG(INFO) << "Words segement" <<std::endl;
+	if ((access("../data", F_OK)) == -1)
+	{
+		LOG(FATAL) << "NLPIR Data does not exist!" << std::endl;
+		return false;
+	}
 	if (!NLPIR_Init("../data/", UTF8_CODE))
 	{
 		LOG(FATAL) << "ICTCLAS init error" <<std::endl;
