@@ -41,8 +41,8 @@ namespace ict
 			 *ret[bool] 生成成功返回true否则返回false
 			 */
 			bool generate_sub_topics(std::vector<WeiboTopic_ICT::Weibo> &doc_list,
-					                 std::vector<WeiboTopic_ICT::Topic> &topic_list,
-									 int thresh=1, int min_count=3, double match_rate=0.2);
+					         std::vector<WeiboTopic_ICT::Topic> &topic_list,
+				                 int thresh=1, int min_count=3, double match_rate=0.2);
 
 		private:
 			
@@ -76,7 +76,7 @@ namespace ict
 			 *arg3:matrix[vector<vector<int>>] 要填充的共现矩阵
 			 */
 			void _words_occurrence(std::vector<std::string> &key_words, std::string &text,
-					               std::vector<std::vector<int> > &matrix);
+					       std::vector<std::vector<int> > &matrix);
 
 
 			/*判断词语之间的关联关系
@@ -87,8 +87,8 @@ namespace ict
 			 *arg4:words_cluster[map<int, vector>] 存储聚类后的子话题关键词
 			 */
 			void _words_relations(std::vector<std::vector<int> > &matrix, int thresh, 
-								  std::vector<std::string> &key_words,
-								  std::map<int, std::vector<std::string> > &words_cluster);
+	                                      std::vector<std::string> &key_words,
+					      std::map<int, std::vector<std::string> > &words_cluster);
 			
 			
 			tools::AC_automation *_mation_ptr; //自动机对象指针

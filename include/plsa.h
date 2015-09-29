@@ -115,7 +115,7 @@ namespace nlp
 			 *ret[bool] 分词成功返回true否则返回false
 			 */
 			bool _words_segement(std::map<int, std::string> &id_rawtext_map, 
-					             std::map<std::string, int> &tmp_tf_map);
+					     std::map<std::string, int> &tmp_tf_map);
 
 
 			/*生成词典
@@ -126,7 +126,8 @@ namespace nlp
 			 *arg4:tmp_words_map[map] 词字面与id的映射关系
 			 *ret[bool] 词典生成成功返回true否则返回false
 			 */
-			bool _generate_dict(std::map<std::string, int> &tf_map, int min_thresh, std::set<std::string> &stop_set, std::map<std::string, int> &tmp_words_map);
+			bool _generate_dict(std::map<std::string, int> &tf_map, int min_thresh, 
+					    std::set<std::string> &stop_set, std::map<std::string, int> &tmp_words_map);
 			
 			
 			/*文本预处理
@@ -135,7 +136,8 @@ namespace nlp
 			 *arg2:tmp_words_map[map] 词语字面与id的映射
 			 *ret[bool] 预处理成功返回true否则返回false
 			 */
-			bool _text_preprocess(std::map<int, std::string> &id_rawtext_map, std::map<std::string, int> &tmp_words_map);
+			bool _text_preprocess(std::map<int, std::string> &id_rawtext_map,
+                                              std::map<std::string, int> &tmp_words_map);
 			
 			
 			/*预处理
