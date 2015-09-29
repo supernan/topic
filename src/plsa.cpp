@@ -169,8 +169,6 @@ bool nlp::Plsa::_text_preprocess(std::map<int, std::string> &id_rawtext_map,
 	for (iter = id_rawtext_map.begin(); iter != id_rawtext_map.end(); ++iter)
 	{
 		int id = iter->first;
-//		std::map<int, double> data_map;
-//		_counts[id] = data_map;
 		std::string raw_text = iter->second;
 		std::vector<std::string> words;
 		if (!tools::UtilInterface::split_line(raw_text, sep, words))
@@ -348,7 +346,9 @@ void nlp::Plsa::_init_latent_variable(int id)
 		if (_doc_words_map[id] == 0)
 			lm_prob = 0.0;
 		else
+		{
 			lm_prob = double(_counts[id][j]) / double(_doc_words_map[id]); //unigram
+		}
 		if (isnan(lm_prob))
 		{
 			LOG(FATAL)<<"Language model init error! NAN"<<std::endl;
@@ -428,7 +428,8 @@ void nlp::Plsa::_calc_single_doc_prob(int id)
 		double term_sum = 0.0;
 		for (int j = 0; j < _terms_nums; ++j)
 		{
-			term_sum += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
+			double count = _counts[id][j];
+			term_sum += count * (1 - _latent[j][LM]) * _latent[j][k];
 		}
 		_doc_probs[id][k] = term_sum;
 		topic_sum += term_sum;
@@ -454,11 +455,12 @@ void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 	{
 		for (int k = 0; k < _topics_nums; ++k)
 		{
-			term_probs[j][k] += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
-			total[k] += _counts[id][j] * (1 - _latent[j][LM]) * _latent[j][k];
+			double count = _counts[id][j];
+			term_probs[j][k] += count * (1 - _latent[j][LM]) * _latent[j][k];
+			total[k] += count * (1 - _latent[j][LM]) * _latent[j][k];
 			if (isnan(term_probs[j][k]) or isnan(total[k]))
 			{
-				LOG(FATAL)<<"Calc single term prob NAN "<<_counts[id][j]<<" "<<_latent[j][LM]<<" "<<_latent[j][k]<<" "<<total[k]<<std::endl;
+				LOG(FATAL)<<"Calc single term prob NAN "<<count<<" "<<_latent[j][LM]<<" "<<_latent[j][k]<<" "<<total[k]<<std::endl;
 			}
 		}
 	}

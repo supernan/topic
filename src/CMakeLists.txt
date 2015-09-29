@@ -12,6 +12,7 @@ SET(SEC_LIST
 	subtopic.cpp
 	)
 ADD_EXECUTABLE(test ${SEC_LIST})
+ADD_LIBRARY(subtopic SHARED ${SEC_LIST})
 TARGET_LINK_LIBRARIES(test libtinyxml.so libNLPIR.so libglog.a pthread)
 #SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 #TARGET_LINK_LIBRARIES(main ${PROJECT_SOURCE_DIR}/libs/libboost_regex.a)I

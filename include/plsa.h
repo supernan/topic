@@ -12,6 +12,7 @@
 #include<iostream>
 #include<map>
 #include<set>
+#include<boost/unordered_map.hpp>
 #include"tinyxml.h"
 #include"tinystr.h"
 #include"NLPIR.h"
@@ -22,7 +23,7 @@
 #define TOPIC_PLSA_H_
 
 #define LM 18 //定义背景语言模型在数组中的标记
-
+typedef boost::unordered_map<int, double> d_map;
 namespace nlp
 {
 	/*封装PLSA with Background Language全部操作
@@ -232,14 +233,13 @@ namespace nlp
 			std::map<int, WeiboTopic_ICT::Weibo> _id_doc_map; //文档id与文档对象映射关系
 			
 			double _lambda; //背景语言模型所占比重参数
-			std::map<int, double> _tfs_map; //词频
+			std::map<int, double> _tfs_map; //词频I
 			std::map<int, std::string> _literal_map; // id字面对应表
-	        double **_doc_probs; //[MAX_DOCS][MAX_TOPICS]; //文档属于某个主题的概率 PI
-	        double **_term_probs; //[MAX_TERMS][MAX_TOPICS]; //词属于某个主题的概率 P(w|j)
+			double **_doc_probs; //[MAX_DOCS][MAX_TOPICS]; //文档属于某个主题的概率 PI
+			double **_term_probs; //[MAX_TERMS][MAX_TOPICS]; //词属于某个主题的概率 P(w|j)
 			double **_term_probs_bak; //更新词语话题分布时的辅助变量
-	        double **_latent; //优化处理所需的隐变量 [V][K]
-	        double **_counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
-			//std::map<int, std::map<int, double> > _counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
+			double **_latent; //优化处理所需的隐变量 [V][K]
+			double **_counts; //[MAX_DOCS][MAX_TERMS]; //某个词在某篇文档中出现的个数 c(d,w)
 
 	};
 }
