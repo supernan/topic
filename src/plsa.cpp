@@ -68,7 +68,7 @@ bool nlp::Plsa::_load_stop_words(std::set<std::string> &stop_set)
 
 
 bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map, 
-		                        std::map<std::string, int> &tmp_tf_map)
+		                std::map<std::string, int> &tmp_tf_map)
 {
 	LOG(INFO) << "Words segement" <<std::endl;
 	if (!NLPIR_Init("../data/", UTF8_CODE))
@@ -104,7 +104,7 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 
 
 bool nlp::Plsa::_generate_dict(std::map<std::string, int> &tf_map, int min_thresh, std::set<std::string> &stop_set, 
-		                       std::map<std::string, int> &tmp_words_map)
+		               std::map<std::string, int> &tmp_words_map)
 {
 	LOG(INFO) << "Dict generate" <<std::endl;
 	if (tf_map.empty())
@@ -147,7 +147,7 @@ bool nlp::Plsa::_generate_dict(std::map<std::string, int> &tf_map, int min_thres
 
 
 bool nlp::Plsa::_text_preprocess(std::map<int, std::string> &id_rawtext_map,
-		                         std::map<std::string, int> &tmp_words_map)
+		                 std::map<std::string, int> &tmp_words_map)
 {
 	LOG(INFO) << "Text preprocess" <<std::endl;
 	if (id_rawtext_map.empty())

@@ -30,7 +30,7 @@ void ict::SubTopic::_get_plsa_topics()
 
 
 void ict::SubTopic::_words_occurrence(std::vector<std::string> &key_words, std::string &text,
-		                           std::vector<std::vector<int> > &matrix)
+		                      std::vector<std::vector<int> > &matrix)
 {
 	std::vector<std::string> sents;
 	std::string end_sep = "。";
@@ -59,8 +59,8 @@ void ict::SubTopic::_words_occurrence(std::vector<std::string> &key_words, std::
 
 
 void ict::SubTopic::_words_relations(std::vector<std::vector<int> > &matrix, int thresh,
-		                         std::vector<std::string> &key_words,
-								 std::map<int, std::vector<std::string> > &words_cluster)
+		                     std::vector<std::string> &key_words,
+				     std::map<int, std::vector<std::string> > &words_cluster)
 {
 	int m = matrix.size();
 	int n = matrix[0].size();
@@ -195,8 +195,8 @@ bool ict::SubTopic::_generate_docs(double match_rate)
 
 
 bool ict::SubTopic::generate_sub_topics(std::vector<WeiboTopic_ICT::Weibo> &doc_list,
-					                    std::vector<WeiboTopic_ICT::Topic> &topic_list,
-									    int thresh, int min_count, double match_rate)
+					std::vector<WeiboTopic_ICT::Topic> &topic_list,
+					int thresh, int min_count, double match_rate)
 {
 	LOG(INFO)<<"Begin to generate topics"<<std::endl;
 	_plsa_ptr->set_documents(doc_list);
