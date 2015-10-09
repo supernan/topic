@@ -4,6 +4,8 @@
  > Mail: scutzhounan@foxmail.com 
  > Created Time: 2015年09月14日 星期一 10时17分11秒
  ************************************************************************/
+#include <sys/stat.h> 
+#include <sys/types.h>
 #include"plsa.h"
 #include"util.h"
 #ifndef TOPIC_TOPIC_H_

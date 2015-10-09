@@ -1,5 +1,6 @@
 /*************************************************************************
  *
+ *
  > File Name: ../src/plsa.cpp
  > Author: zhounan
  > Mail: scutzhounan@foxmail.com 
@@ -87,7 +88,7 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 	{
 		WeiboTopic_ICT::Weibo doc = iter->second;
 		std::string text = doc.mt;
-		int id = doc.index;
+		int id = iter->first; // fix
 		const char *result;
 		result = NLPIR_ParagraphProcess(text.c_str(), 0);
 		std::string raw_line = result;
@@ -105,6 +106,26 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 	_docs_nums = index_rawtext_map.size(); //获得文档总数
 	LOG(INFO) << "Words segement succeed" <<std::endl;
 	return true;
+}
+
+
+bool nlp::Plsa::_build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions) //fix here
+{
+	std::vector<std::string> texts;
+	for (unsigned int i = 0; i < doc_list.size(); ++i)
+	{
+		texts.push_back(doc_list[i].mt);
+	}
+	Simhash::Open(5, _simhash_handler);
+	Simhash::SetData(_simhash_handler, texts);
+	for (unsigned int i = 0; i < texts.size(); ++i)
+	{
+		vector<int> index;
+		Simhash::Find(_simhash_handler, texts[i], index);
+		if (index.size() <= 1)
+			positions[i] = NO_DUPLICATE;
+	}
+	Simhash::Destroy(_simhash_handler);
 }
 
 
@@ -315,6 +336,7 @@ void nlp::Plsa::_allocate_latent_variable()
 
 nlp::Plsa::Plsa(std::string &conf_path)
 {
+	_simhash_handler = NULL;
 	if (!_load_config(conf_path))
 	{
 		LOG(FATAL)<<"Load configuration failed"<<std::endl;
@@ -340,11 +362,6 @@ nlp::Plsa::~Plsa()
 
 void nlp::Plsa::_init_latent_variable(int id)
 {
-	LOG(INFO) << "Init latent variable z" << std::endl;
-	LOG(INFO) <<_docs_nums<<" "<<_topics_nums<<" "<<_terms_nums<<std::endl;
-	clock_t start, finish;
-	double total_time = 0.0;
-	start = clock();
 	for (int j = 0; j < _terms_nums; ++j)
 	{
 		double lm_prob = 0.0; //背景语言模型概率
@@ -378,19 +395,12 @@ void nlp::Plsa::_init_latent_variable(int id)
 		}
 
 	}
-	finish = clock();
-	total_time = (double)(finish-start) / CLOCKS_PER_SEC;
-	LOG(INFO) <<"Init latent z finish"<<" "<<total_time<<"s" <<std::endl;
 
 }
 
 
 void nlp::Plsa::_calc_latent_variable(int id, double **term_probs)
 {
-	LOG(INFO) <<"Calc latent"<<std::endl;
-	clock_t start,finish;
-	double total_time = 0.0;
-	start = clock();
 	for (int j = 0; j < _terms_nums; ++j)
 	{
 		double topic_sum = 0.0;
@@ -418,9 +428,6 @@ void nlp::Plsa::_calc_latent_variable(int id, double **term_probs)
 			LOG(FATAL)<<"Calc latent[j][LM] error! NAN"<<std::endl;
 		}
 	}
-	finish = clock();
-	total_time=(double)(finish-start) / CLOCKS_PER_SEC;
-	LOG(INFO) <<"Calc latent finish"<<" "<<total_time<<"s"<<std::endl;
 
 }
 
@@ -474,6 +481,11 @@ void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 
 void nlp::Plsa::_init_EM()
 {
+	LOG(INFO) << "Init latent variable z" << std::endl;
+	LOG(INFO) <<_docs_nums<<" "<<_topics_nums<<" "<<_terms_nums<<std::endl;
+	clock_t start, finish;
+	double total_time = 0.0;
+	start = clock();
 	srand(time(0));
 	std::cout<<"Init EM args"<<std::endl;
 	double *total = new double[_topics_nums];
@@ -486,6 +498,9 @@ void nlp::Plsa::_init_EM()
 	}
 	_term_normalization(_term_probs, total);
 	delete total;
+	finish = clock();
+	total_time = (double)(finish-start) / CLOCKS_PER_SEC;
+	LOG(INFO) <<"Init latent z finish"<<" "<<total_time<<"s" <<std::endl;
 	std::cout<<"Init EM args end"<<std::endl;
 }
 
@@ -565,7 +580,13 @@ bool nlp::Plsa::train_plsa()
 	{
 		LOG(INFO) <<i<<"th iteration"<<std::endl;
 		std::cout<<i<<"th iteration"<<std::endl;
+		clock_t start,finish;
+		double total_time = 0.0;
+		start = clock();
 		_EM_process(term_flg);
+		finish = clock();
+		total_time=(double)(finish-start) / CLOCKS_PER_SEC;
+		LOG(INFO) <<"iteration finish"<<" "<<total_time<<"s"<<std::endl;
 	}
 	_merge_term_probs(); //将term_probs与term_probs_bak合并
 	std::string save_path = "../data";
@@ -755,10 +776,19 @@ bool nlp::Plsa::load_probs(std::string &path)
 void nlp::Plsa::set_documents(std::vector<WeiboTopic_ICT::Weibo> &doc_list)
 {
 	_id_doc_map.clear();
+	std::vector<int> positions(doc_list.size(), DUPLICATE);
+	std::cout<<"befor hash"<<doc_list.size()<<std::endl;
+	_build_simhash(doc_list, positions);
+	int count = 0;
 	for (unsigned int i = 0; i < doc_list.size(); i++)
 	{
-		_id_doc_map[doc_list[i].index] = doc_list[i];
+		if (positions[i] == NO_DUPLICATE)
+		{
+			_id_doc_map[count] = doc_list[i];
+			count += 1;
+		}
 	}
+	std::cout<<"after hash"<<_id_doc_map.size()<<std::endl;
 }
 
 

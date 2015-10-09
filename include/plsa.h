@@ -15,6 +15,7 @@
 #include<boost/unordered_map.hpp>
 #include"tinyxml.h"
 #include"tinystr.h"
+#include"ICTSimHashInterface.h"
 #include"NLPIR.h"
 #include"util.h"
 #include"const.h"
@@ -23,7 +24,8 @@
 #define TOPIC_PLSA_H_
 
 #define LM 18 //定义背景语言模型在数组中的标记
-typedef boost::unordered_map<int, double> d_map;
+#define NO_DUPLICATE 1 //标记文档不重复
+#define DUPLICATE 0 //标记文档重复
 namespace nlp
 {
 	/*封装PLSA with Background Language全部操作
@@ -91,6 +93,15 @@ namespace nlp
 			void set_documents(std::vector<WeiboTopic_ICT::Weibo> &doc_list);
 		
 		private:
+
+
+			/*构造simhash表并检查重复文档
+			 *arg1:doc_list 文档列表
+			 *arg2:positions 记载不重复文档的位置
+			 *ret[bool] 去重成功返回true否则返回false
+			 */
+			bool _build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions);
+
 
 			/*加载配置文件
 			 *根据路径加载配置文件初始化模型参数
@@ -226,6 +237,7 @@ namespace nlp
 
 			std::string _local_path; //本地语料路径
 			std::string _stop_words_path; //停用词路径
+			Simhash::SimhashHandler _simhash_handler;	
 
 			int _docs_nums; //文档数
 			int _terms_nums; //词汇数
