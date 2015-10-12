@@ -1,4 +1,5 @@
 /*************************************************************************
+ *
  > File Name: ../src/util.cpp
  > Author: zhounan
  > Mail: scutzhounan@foxmail.com 
@@ -227,4 +228,128 @@ void tools::RelationTreeInterface::union_node(int x, int y, std::vector<int> &pa
 		parents[y] = x;
 	else
 		parents[x] = y;
+}
+
+
+tools::WordSegThreadPool::WordSegThreadPool(int thread_num, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map)
+{
+	WordSegThreadPool::_thread_num = thread_num;
+	WordSegThreadPool::_doc_num = id_doc_map.size();
+	if (!NLPIR_Init("../data/", UTF8_CODE))
+	{
+		LOG(FATAL) << "ICTCLAS init error" <<std::endl;
+	}
+	
+	std::map<int, WeiboTopic_ICT::Weibo>::iterator iter;
+	for (iter = id_doc_map.begin(); iter != id_doc_map.end(); ++iter)
+	{
+		_doc_ids.push_back(iter->first);
+		_docs.push_back(iter->second.mt);
+	}
+}
+
+
+void* tools::_word_cut_thread(void *arg)
+{
+	std::map<int, std::string> index_rawtext_map;
+	std::map<std::string, int> tmp_tf_map;
+	thread_param *param = (thread_param*)arg;
+	int start = param->start;
+	int end = param->end;
+	std::string sep = " ";
+	thread_ret *ret = new thread_ret;
+	for (unsigned int i = start; i <= end; ++i)
+	{
+		const char *result;
+		int id = param->ws_ptr->_doc_ids[i];
+		std::string text = param->ws_ptr->_docs[i];
+		result = NLPIR_ParagraphProcess(text.c_str(), 0);
+		std::string raw_line = result;
+		index_rawtext_map[id] = raw_line; //保留文档分词后的结果
+		std::vector<std::string> words;
+		if (!tools::UtilInterface::split_line(raw_line, sep, words))
+		{
+			LOG(ERROR) << "Error when cut words " <<std::endl;
+		}
+		for (unsigned int i = 0; i < words.size(); ++i)
+			tmp_tf_map[words[i]]++; //词频统计
+		
+	}
+	ret->local_rawtext_map = index_rawtext_map;
+	ret->local_tf_map = tmp_tf_map;
+	return (void*)ret;
+}
+
+
+void tools::WordSegThreadPool::_merge_local_map(thread_ret *ret, std::map<int, std::string> &id_rawtext_map,
+		                                        std::map<std::string, int> &tmp_tf_map)
+{
+	std::map<int, std::string> raw_text_map = ret->local_rawtext_map;
+	std::map<std::string, int> tf_map = ret->local_tf_map;
+	std::map<int, std::string>::iterator text_iter;
+	std::map<std::string, int>::iterator tf_iter;
+	for (text_iter = raw_text_map.begin(); text_iter != raw_text_map.end(); ++text_iter)
+	{
+		int id = text_iter->first;
+		std::string text = text_iter->second;
+		id_rawtext_map[id] = text;
+	}
+	for (tf_iter = tf_map.begin(); tf_iter != tf_map.end(); ++tf_iter)
+	{
+		std::string word = tf_iter->first;
+		int tf = tf_iter->second;
+		tmp_tf_map[word] += tf;
+	}
+}
+
+
+void tools::WordSegThreadPool::_destroy_word_seg(void **ret, pthread_t* tids, thread_param* params)
+{
+	for (int i = 0; i < _thread_num; ++i)
+		delete ret[i];
+	delete ret;
+	delete tids;
+	delete params;
+	NLPIR_Exit();
+}
+
+
+bool tools::WordSegThreadPool::multithread_word_cut(std::map<int, std::string> &id_rawtext_map,
+		                         std::map<std::string, int> &tmp_tf_map)
+{
+	LOG(INFO)<<"Multi thread word cut begin"<<std::endl;
+	int each_thread_docs = _doc_num / _thread_num;
+	pthread_t *tids = new pthread_t[_thread_num];
+	void **rets = new void*[_thread_num];
+	thread_param *params = new thread_param[_thread_num];
+	if (each_thread_docs == 0)
+	{
+		LOG(ERROR)<<"Docs is too few less than thread_num!"<<std::endl;
+		return false;
+	}
+	params[0].start = 0;
+	params[0].end = each_thread_docs - 1;
+	params[0].ws_ptr = this;
+	for (int i = 1; i < _thread_num; ++i)
+	{
+		params[i].start = params[i-1].end + 1;
+		params[i].ws_ptr = this;
+		if ((params[i].start + each_thread_docs-1) >_doc_num-1)
+			params[i].end = _doc_num - 1;
+		else
+			params[i].end = params[i].start + each_thread_docs -1;
+	}
+	for (int i = 0; i < _thread_num; ++i)
+	{
+		pthread_create(&tids[i], NULL, _word_cut_thread, (void*)(&params[i]));
+	}
+	for (int i = 0; i < _thread_num; ++i)
+	{
+		pthread_join(tids[i], &rets[i]);
+		thread_ret *ws_ret = (thread_ret*)rets[i];
+		_merge_local_map(ws_ret, id_rawtext_map, tmp_tf_map);
+	}
+	_destroy_word_seg(rets, tids, params);
+	LOG(INFO)<<"Multi thread word cut end"<<std::endl;
+	return true;
 }

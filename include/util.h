@@ -8,6 +8,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<fcntl.h>
+#include<pthread.h>
 #include<unistd.h>
 #include<iostream>
 #include<fstream>
@@ -17,6 +18,7 @@
 #include"glog/logging.h"
 #include"const.h"
 #include"DataType.h"
+#include"NLPIR.h"
 #ifndef TOPIC_UTIL_H_
 #define TOPIC_UTIL_H_
 
@@ -38,6 +40,29 @@ namespace tools
 			pattern_id = -1;
 			fail = NULL;
 		}
+	};
+
+	/*分词线程输入输入参数
+	 *start为缓冲区起始位置
+	 *end为缓冲区终止位置
+	 */
+	class WordSegThreadPool;
+	void* _word_cut_thread(void *param);
+	struct thread_param
+	{
+		int start;
+		int end;
+		WordSegThreadPool* ws_ptr;
+	};
+
+	/*分词线程的返回值
+	 *local_rawtext_map存储线程内处理的分词后文本
+	 *local_tf_map 存储线程内部处理的局部词频统计
+	 */
+	struct thread_ret
+	{
+		std::map<int, std::string> local_rawtext_map;
+		std::map<std::string, int> local_tf_map;
 	};
 
 	
@@ -156,9 +181,32 @@ namespace tools
 			 *从本地读取文本数据并存入指定的数据结构
 			 *arg1:local[string] 本地存储路径
 			 *arg2:doc_list[map] 存储读取到的文档
-			 *ret[bool] 读取成功返回true否则返回false
+			 *ret[bool] I读取成功返回true否则返回false
 			 */
 			static bool read_text_from_local(std::string &local, std::vector<WeiboTopic_ICT::Weibo> &doc_list);
+	};
+
+	
+	/*实现多线程分词的线程池
+	 *
+	 */
+	class WordSegThreadPool
+	{
+		public:
+			WordSegThreadPool(int thread_num, std::map<int, WeiboTopic_ICT::Weibo> &id_doc_map);
+			bool multithread_word_cut(std::map<int, std::string> &id_rawtext_map,
+					                   std::map<std::string, int> &tmp_tf_map);
+			friend void* _word_cut_thread(void *param);
+		
+		private:
+			void _merge_local_map(thread_ret *ret, std::map<int, std::string> &id_doc_map,
+					              std::map<std::string, int> &tmp_tf_map);
+			void _destroy_word_seg(void **ret, pthread_t *tids, thread_param *params);
+			
+			std::vector<std::string> _docs;
+			std::vector<int> _doc_ids;
+			int _thread_num;
+			int _doc_num;
 	};
 
 

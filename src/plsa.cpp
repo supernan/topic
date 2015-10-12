@@ -72,6 +72,12 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 		                std::map<std::string, int> &tmp_tf_map)
 {
 	LOG(INFO) << "Words segement" <<std::endl;
+	/*clock_t start, finish;
+	double total_time = 0.0;
+	start = clock();*/
+	time_t start, end;
+	double total_time = 0.0;
+	start = time(NULL);
 	if ((access("../data", F_OK)) == -1)
 	{
 		LOG(FATAL) << "NLPIR Data does not exist!" << std::endl;
@@ -82,7 +88,9 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 		LOG(FATAL) << "ICTCLAS init error" <<std::endl;
 		return false;
 	}
-	std::string sep = " ";
+	tools::WordSegThreadPool wordseg_pool(4, _id_doc_map);
+	wordseg_pool.multithread_word_cut(index_rawtext_map, tmp_tf_map);
+	/*std::string sep = " ";
 	std::map<int, WeiboTopic_ICT::Weibo>::iterator iter;
 	for (iter = _id_doc_map.begin(); iter != _id_doc_map.end(); ++iter)
 	{
@@ -102,9 +110,14 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 		for (unsigned int i = 0; i < words.size(); ++i)
 			tmp_tf_map[words[i]]++; //词频统计
 	}
-	NLPIR_Exit();
+	NLPIR_Exit();*/
 	_docs_nums = index_rawtext_map.size(); //获得文档总数
-	LOG(INFO) << "Words segement succeed" <<std::endl;
+	/*finish = clock();
+	total_time = (double)(finish-start) / CLOCKS_PER_SEC;
+	LOG(INFO) <<"Word segements succeed"<<" "<<total_time<<"s" <<std::endl;*/
+	end = time(NULL);
+	total_time = difftime(start, end);
+	std::cout <<"Word segements succeed"<<" "<<total_time<<"s" <<std::endl;
 	return true;
 }
 
@@ -337,6 +350,7 @@ void nlp::Plsa::_allocate_latent_variable()
 nlp::Plsa::Plsa(std::string &conf_path)
 {
 	_simhash_handler = NULL;
+	omp_init_nest_lock(&_term_lock);
 	if (!_load_config(conf_path))
 	{
 		LOG(FATAL)<<"Load configuration failed"<<std::endl;
@@ -376,24 +390,24 @@ void nlp::Plsa::_init_latent_variable(int id)
 			LOG(FATAL)<<"Language model init error! NAN"<<std::endl;
 		}
 		_latent[j][LM] = lm_prob;
-		std::vector<int> random_nums;
+		/*std::vector<int> random_nums;
 		int total = 0;
 		for (int k = 0; k < _topics_nums; ++k) //TODO(zhounan) 随机初始化这一步效率低，需优化
 		{
 			int num = rand()%100 + 1;
 			random_nums.push_back(num);
 			total += num;
-		}
+		}*/
 		for (int k = 0; k < _topics_nums; ++k)
 		{
-			double prob = double(random_nums[k]) / double(total);
+			/*double prob = double(random_nums[k]) / double(total);
 			if (isnan(prob))
 			{
 				LOG(FATAL)<<"Latent init error! NAN"<<std::endl;
 			}
-			_latent[j][k] = prob;
+			_latent[j][k] = prob;*/
+			_latent[j][k] = double(1) / double(id + 10 + k); //TODO(zhounan)此处有优化 需进一步考察
 		}
-
 	}
 
 }
@@ -463,6 +477,7 @@ void nlp::Plsa::_calc_single_doc_prob(int id)
 
 void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 {
+	omp_set_nest_lock(&_term_lock);
 	for (int j = 0; j < _terms_nums; ++j)
 	{
 		for (int k = 0; k < _topics_nums; ++k)
@@ -476,6 +491,7 @@ void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 			}
 		}
 	}
+	omp_unset_nest_lock(&_term_lock);
 }
 
 
@@ -490,6 +506,7 @@ void nlp::Plsa::_init_EM()
 	std::cout<<"Init EM args"<<std::endl;
 	double *total = new double[_topics_nums];
 	memset(total, 0, sizeof(double)*_topics_nums);
+	#pragma omp parallel for
 	for (int i = 0; i < _docs_nums; ++i)
 	{
 		_init_latent_variable(i);
@@ -517,7 +534,8 @@ void nlp::Plsa::_EM_process(bool &term_flg)
 	double *total = new double[_topics_nums];
 	memset(total, 0, sizeof(double)*_topics_nums);
 	if (term_flg)
-	{
+	{ 
+		#pragma omp parallel for
 		for (int i = 0; i < _docs_nums; ++i) //为减少内存占用，每篇文档单独计算
 		{
 			_calc_latent_variable(i, _term_probs);
@@ -528,7 +546,8 @@ void nlp::Plsa::_EM_process(bool &term_flg)
 		_clear_term_probs(_term_probs); //清除上一次计算的变量值，准备下一次计算
 	}
 	else
-	{
+	{	
+		#pragma omp parallel for
 		for (int i = 0; i < _docs_nums; ++i)
 		{
 			_calc_latent_variable(i, _term_probs_bak);
@@ -580,12 +599,12 @@ bool nlp::Plsa::train_plsa()
 	{
 		LOG(INFO) <<i<<"th iteration"<<std::endl;
 		std::cout<<i<<"th iteration"<<std::endl;
-		clock_t start,finish;
+		time_t start,finish;
 		double total_time = 0.0;
-		start = clock();
+		start = time(NULL);
 		_EM_process(term_flg);
-		finish = clock();
-		total_time=(double)(finish-start) / CLOCKS_PER_SEC;
+		finish = time(NULL);
+		total_time=difftime(finish, start);
 		LOG(INFO) <<"iteration finish"<<" "<<total_time<<"s"<<std::endl;
 	}
 	_merge_term_probs(); //将term_probs与term_probs_bak合并
