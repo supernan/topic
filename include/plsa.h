@@ -100,7 +100,7 @@ namespace nlp
 			 *arg2:positions 记载不重复文档的位置
 			 *ret[bool] 去重成功返回true否则返回false
 			 */
-			bool _build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions);
+			int _build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions);
 
 
 			/*加载配置文件
@@ -240,12 +240,15 @@ namespace nlp
 			Simhash::SimhashHandler _simhash_handler;	
 
 			omp_nest_lock_t _term_lock;
+			omp_nest_lock_t _latent_lock;
+
 			int _docs_nums; //文档数
 			int _terms_nums; //词汇数
 			int _topics_nums; //话题数
 			int _iter_nums; //迭代次数
 			std::map<int, double> _doc_words_map; //统计每篇文档中的总词汇数
 			std::map<int, WeiboTopic_ICT::Weibo> _id_doc_map; //文档id与文档对象映射关系
+			std::map<int, WeiboTopic_ICT::Weibo> _id_total_map; //文档id与文档对象映射关系
 			
 			double _lambda; //背景语言模型所占比重参数
 			std::map<int, double> _tfs_map; //词频I

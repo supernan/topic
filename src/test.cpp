@@ -14,9 +14,9 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	string conf_path = "../conf/plsa_conf.xml";
-	string local_path = "/home/zhounan/corpus/mongo_data/baokong_content";
+	//string local_path = "/home/zhounan/corpus/mongo_data/explosion_text";
 	//string local_path = "/home/zhounan/corpus/sogou_text";
-	//string local_path = "../data/tianjin_text";
+	string local_path = "../data/tianjin_text";
 	ict::SubTopic sub_topic(conf_path);
 	vector<WeiboTopic_ICT::Weibo> doc_list;
 	vector<WeiboTopic_ICT::Topic> topic_list;

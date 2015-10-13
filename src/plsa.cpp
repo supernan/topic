@@ -122,9 +122,10 @@ bool nlp::Plsa::_words_segement(std::map<int, std::string> &index_rawtext_map,
 }
 
 
-bool nlp::Plsa::_build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions) //fix here
+int nlp::Plsa::_build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std::vector<int> &positions) //fix here
 {
 	std::vector<std::string> texts;
+	int unique_count = 0;
 	for (unsigned int i = 0; i < doc_list.size(); ++i)
 	{
 		texts.push_back(doc_list[i].mt);
@@ -136,7 +137,10 @@ bool nlp::Plsa::_build_simhash(std::vector<WeiboTopic_ICT::Weibo> &doc_list, std
 		vector<int> index;
 		Simhash::Find(_simhash_handler, texts[i], index);
 		if (index.size() <= 1)
+		{
 			positions[i] = NO_DUPLICATE;
+			unique_count += 1;
+		}
 	}
 	Simhash::Destroy(_simhash_handler);
 }
@@ -415,6 +419,7 @@ void nlp::Plsa::_init_latent_variable(int id)
 
 void nlp::Plsa::_calc_latent_variable(int id, double **term_probs)
 {
+	//omp_set_nest_lock(&_latent_lock);
 	for (int j = 0; j < _terms_nums; ++j)
 	{
 		double topic_sum = 0.0;
@@ -442,7 +447,7 @@ void nlp::Plsa::_calc_latent_variable(int id, double **term_probs)
 			LOG(FATAL)<<"Calc latent[j][LM] error! NAN"<<std::endl;
 		}
 	}
-
+	//omp_unset_nest_lock(&_latent_lock);
 }
 
 
@@ -477,7 +482,7 @@ void nlp::Plsa::_calc_single_doc_prob(int id)
 
 void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 {
-	omp_set_nest_lock(&_term_lock);
+	//omp_set_nest_lock(&_term_lock);
 	for (int j = 0; j < _terms_nums; ++j)
 	{
 		for (int k = 0; k < _topics_nums; ++k)
@@ -491,7 +496,7 @@ void nlp::Plsa::_calc_term_prob(int id, double *total, double **term_probs)
 			}
 		}
 	}
-	omp_unset_nest_lock(&_term_lock);
+	//omp_unset_nest_lock(&_term_lock);
 }
 
 
@@ -535,7 +540,6 @@ void nlp::Plsa::_EM_process(bool &term_flg)
 	memset(total, 0, sizeof(double)*_topics_nums);
 	if (term_flg)
 	{ 
-		#pragma omp parallel for
 		for (int i = 0; i < _docs_nums; ++i) //为减少内存占用，每篇文档单独计算
 		{
 			_calc_latent_variable(i, _term_probs);
@@ -547,7 +551,6 @@ void nlp::Plsa::_EM_process(bool &term_flg)
 	}
 	else
 	{	
-		#pragma omp parallel for
 		for (int i = 0; i < _docs_nums; ++i)
 		{
 			_calc_latent_variable(i, _term_probs_bak);
@@ -668,7 +671,7 @@ bool nlp::Plsa::get_topic_words(std::map<int, std::vector<std::string> > &topic_
 
 std::map<int, WeiboTopic_ICT::Weibo> nlp::Plsa::get_documents() const
 {
-	return _id_doc_map;
+	return _id_total_map;
 }
 
 
@@ -795,16 +798,29 @@ bool nlp::Plsa::load_probs(std::string &path)
 void nlp::Plsa::set_documents(std::vector<WeiboTopic_ICT::Weibo> &doc_list)
 {
 	_id_doc_map.clear();
+	_id_total_map.clear();
 	std::vector<int> positions(doc_list.size(), DUPLICATE);
 	std::cout<<"befor hash"<<doc_list.size()<<std::endl;
-	_build_simhash(doc_list, positions);
+	int unique_count =_build_simhash(doc_list, positions);
 	int count = 0;
+	int total_count = 0;
 	for (unsigned int i = 0; i < doc_list.size(); i++)
 	{
 		if (positions[i] == NO_DUPLICATE)
 		{
-			_id_doc_map[count] = doc_list[i];
-			count += 1;
+			bool sample_flg = true;
+			if (unique_count > 10000)
+			{
+				if (rand()%6 > 0)
+					sample_flg = false;
+			}
+			if (sample_flg)
+			{
+				_id_doc_map[count] = doc_list[i];
+				count += 1;
+			}
+			_id_total_map[total_count] = doc_list[i];
+			total_count += 1;
 		}
 	}
 	std::cout<<"after hash"<<_id_doc_map.size()<<std::endl;
