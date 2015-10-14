@@ -237,10 +237,7 @@ namespace nlp
 
 			std::string _local_path; //本地语料路径
 			std::string _stop_words_path; //停用词路径
-			Simhash::SimhashHandler _simhash_handler;	
-
-			omp_nest_lock_t _term_lock;
-			omp_nest_lock_t _latent_lock;
+			Simhash::SimhashHandler _simhash_handler; //进行simhash的指针
 
 			int _docs_nums; //文档数
 			int _terms_nums; //词汇数

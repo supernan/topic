@@ -2,7 +2,7 @@
 	<topics>10</topics>
 	<iteration>30</iteration>
 	<lambda>0.9</lambda>
-	<local_path>../data/tianjin_text</local_path>
+	<local_path>/home/zhounan/corpus/mongo_data/baokong_text</local_path>
 	<stop_words_path>../data/stop_words</stop_words_path>
 	<dict>../data/sample_words_tf</dict>
 	<doc_tf>../data/sample_doc_word2</doc_tf>
